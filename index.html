@@ -13,8 +13,10 @@
 <button onclick="switchMode('3d')">3D Mode</button>
 </div>
 
-<!-- 2D CONTAINER -->
+<!-- ================= 2D ================= -->
+
 <div id="mode2DContainer">
+
 <h1>Universal RGB Image Renderer</h1>
 
 <div class="instructions">
@@ -46,27 +48,29 @@ Mode:
 <option value="stress">Stress Test Mode</option>
 </select>
 
-<button id="commitStress" onclick="generateStress()">Commit Stress Test</button>
+<button onclick="generateStress()">Commit Stress Test</button>
 
 <br>
 
-<textarea id="inputData"></textarea>
+<textarea id="inputData" placeholder="Values separated by spaces..."></textarea>
 
 <br>
 
-<button id="convert" onclick="renderImage()">Convert</button>
-<button id="fast" onclick="renderImage('fast')">FAST MODE</button>
-<button id="slow" onclick="renderImage('slow')">SLOW MODE</button>
-<button id="download" onclick="downloadPNG()">Download PNG</button>
+<button onclick="renderImage()">Convert</button>
+<button onclick="renderImage()">FAST MODE</button>
+<button onclick="renderImage()">SLOW MODE</button>
+<button onclick="downloadPNG()">Download PNG</button>
 
 <div id="warning"></div>
 <div id="error"></div>
 <div id="stats"></div>
 
 <canvas id="canvas2D"></canvas>
+
 </div>
 
-<!-- 3D CANVAS -->
+<!-- ================= 3D ================= -->
+
 <canvas id="canvas3D"></canvas>
 
 <script src="engine2d.js"></script>
