@@ -3,19 +3,85 @@
 <head>
 <meta charset="UTF-8">
 <title>Universal RGB Image Renderer</title>
-<link rel="stylesheet" href="style.css">
+
+<style>
+body{
+background:#0a0a0a;
+color:#00ff88;
+font-family:monospace;
+text-align:center;
+padding:20px;
+margin:0;
+}
+
+h1{color:white;}
+
+.instructions{
+max-width:900px;
+margin:auto;
+text-align:left;
+color:#cccccc;
+margin-bottom:20px;
+}
+
+textarea{
+width:95%;
+height:200px;
+background:#111;
+color:#00ff88;
+border:1px solid #00ff88;
+padding:10px;
+margin-top:10px;
+}
+
+input,select{
+background:#111;
+color:#00ff88;
+border:1px solid #00ff88;
+padding:6px;
+margin:5px;
+text-align:center;
+}
+
+button{
+padding:12px 25px;
+margin:10px;
+border:none;
+font-size:16px;
+cursor:pointer;
+}
+
+#convert{background:#00aa44;color:white;}
+#fast{background:#aa0000;color:white;}
+#slow{background:#0044aa;color:white;}
+#commitStress{background:#0066ff;color:white;}
+#download{background:#ffaa00;color:black;}
+
+canvas{
+margin-top:30px;
+border:1px solid #00ff88;
+image-rendering:pixelated;
+background:black;
+}
+
+#canvasContainer{
+width:100%;
+height:70vh;
+margin-top:20px;
+border:1px solid #00ff88;
+display:none;
+}
+
+#error{color:red;margin-top:10px;}
+#warning{color:#ff4444;margin-top:10px;}
+#stats{color:#00ffff;margin-top:10px;}
+</style>
 </head>
 
 <body>
 
-<div id="modeSwitch">
-<button onclick="switchMode('2d')">2D Mode</button>
-<button onclick="switchMode('3d')">3D Mode</button>
-</div>
-
-<!-- ================= 2D ================= -->
-
-<div id="mode2DContainer">
+<button onclick="show2D()">2D Mode</button>
+<button onclick="show3D()">3D Mode</button>
 
 <h1>Universal RGB Image Renderer</h1>
 
@@ -48,7 +114,7 @@ Mode:
 <option value="stress">Stress Test Mode</option>
 </select>
 
-<button onclick="generateStress()">Commit Stress Test</button>
+<button id="commitStress" onclick="generateStress()">Commit Stress Test</button>
 
 <br>
 
@@ -56,36 +122,39 @@ Mode:
 
 <br>
 
-<button onclick="renderImage()">Convert</button>
-<button onclick="renderImage()">FAST MODE</button>
-<button onclick="renderImage()">SLOW MODE</button>
-<button onclick="downloadPNG()">Download PNG</button>
+<button id="convert" onclick="renderImage()">Convert</button>
+<button id="fast" onclick="renderImage('fast')">FAST MODE</button>
+<button id="slow" onclick="renderImage('slow')">SLOW MODE</button>
+<button id="download" onclick="downloadPNG()">Download PNG</button>
 
 <div id="warning"></div>
 <div id="error"></div>
 <div id="stats"></div>
 
-<canvas id="canvas2D"></canvas>
+<canvas id="canvas"></canvas>
 
-</div>
+<div id="canvasContainer"></div>
 
-<!-- ================= 3D ================= -->
+<!-- THREE.JS LOADS FIRST -->
+<script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
 
-<canvas id="canvas3D"></canvas>
-
+<!-- 2D ENGINE -->
 <script src="engine2d.js"></script>
-<script src="shaders.js"></script>
+
+<!-- 3D ENGINE -->
 <script src="engine3d.js"></script>
 
 <script>
-function switchMode(mode){
-document.getElementById("mode2DContainer").style.display =
-mode==="2d" ? "block" : "none";
-
-document.getElementById("canvas3D").style.display =
-mode==="3d" ? "block" : "none";
+function show2D(){
+document.getElementById("canvas").style.display="block";
+document.getElementById("canvasContainer").style.display="none";
 }
-switchMode("2d");
+
+function show3D(){
+document.getElementById("canvas").style.display="none";
+document.getElementById("canvasContainer").style.display="block";
+init3D();
+}
 </script>
 
 </body>
