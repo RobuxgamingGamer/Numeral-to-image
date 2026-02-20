@@ -2,108 +2,93 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Universal RGB Image Renderer</title>
+<title>Universal RGB Image Renderer PRO</title>
 
 <style>
 body {
-    background: #0a0a0a;
-    color: #00ff88;
-    font-family: monospace;
-    text-align: center;
-    padding: 20px;
+    background:#0a0a0a;
+    color:#00ff88;
+    font-family:monospace;
+    text-align:center;
+    padding:20px;
 }
 
-h1 { color: white; }
-
-.instructions {
-    max-width: 900px;
-    margin: auto;
-    text-align: left;
-    color: #cccccc;
-}
+h1 { color:white; }
 
 textarea {
-    width: 95%;
-    height: 220px;
-    background: #111;
-    color: #00ff88;
-    border: 1px solid #00ff88;
-    padding: 10px;
-    margin-top: 15px;
-    resize: vertical;
+    width:95%;
+    height:200px;
+    background:#111;
+    color:#00ff88;
+    border:1px solid #00ff88;
+    padding:10px;
+    margin-top:10px;
 }
 
 input, select {
-    background: #111;
-    color: #00ff88;
-    border: 1px solid #00ff88;
-    padding: 6px;
-    text-align: center;
-    margin: 5px;
+    background:#111;
+    color:#00ff88;
+    border:1px solid #00ff88;
+    padding:6px;
+    margin:5px;
+    text-align:center;
 }
 
 button {
-    background: #00aa44;
-    color: white;
-    border: none;
-    padding: 15px 40px;
-    font-size: 18px;
-    margin-top: 20px;
-    cursor: pointer;
+    padding:12px 25px;
+    margin:10px;
+    border:none;
+    font-size:16px;
+    cursor:pointer;
 }
 
-button:hover { background: #00cc55; }
+#convert { background:#00aa44; color:white; }
+#stress { background:#ffaa00; color:black; }
+#fast { background:#aa0000; color:white; }
+#slow { background:#0044aa; color:white; }
 
 canvas {
-    margin-top: 40px;
-    border: 1px solid #00ff88;
-    image-rendering: pixelated;
-    background: black;
+    margin-top:30px;
+    border:1px solid #00ff88;
+    image-rendering:pixelated;
+    background:black;
 }
 
-#error {
-    color: red;
-    margin-top: 10px;
-}
+#error { color:red; margin-top:10px; }
+#warning { color:#ff4444; margin-top:10px; }
 </style>
 </head>
 
 <body>
 
-<h1>Universal RGB Image Renderer</h1>
-
-<div class="instructions">
-<b>Instructions:</b><br>
-1. Enter size as Width-Height (1-1000 pixels)<br>
-2. Each pixel requires 3 values (R G B)<br>
-3. Values depend on selected format<br>
-4. Total values = Width × Height × 3<br>
-5. Morse: "-" = 1 and "." = 0 (must equal 8 symbols)<br>
-</div>
-
-<br>
+<h1>Universal RGB Image Renderer PRO</h1>
 
 Size (W-H):
 <input id="size" value="2-2">
 
 Format:
 <select id="format">
-  <option value="binary">Binary (8-bit)</option>
-  <option value="decimal">Decimal (0-255)</option>
-  <option value="hex">Hex (00-FF)</option>
-  <option value="octal">Octal (000-377)</option>
-  <option value="morse">Morse (- = 1, . = 0)</option>
+<option value="binary">Binary (8-bit)</option>
+<option value="decimal">Decimal (0-255)</option>
+<option value="hex">Hex (00-FF)</option>
+<option value="octal">Octal (000-377)</option>
+<option value="morse">Morse (-=1 .=0)</option>
+<option value="colorcode">Color Code (#RRGGBB)</option>
 </select>
 
 <br>
 
-<textarea id="inputData" placeholder="Enter values separated by spaces..."></textarea>
+<textarea id="inputData" placeholder="Values separated by spaces..."></textarea>
 
 <br>
 
-<button onclick="renderImage()">Convert</button>
+<button id="convert" onclick="renderImage()">Convert</button>
+<button id="stress" onclick="generateStress()">Stress Test</button>
+<button id="fast" onclick="renderImage('fast')">FAST MODE</button>
+<button id="slow" onclick="renderImage('slow')">SLOW MODE</button>
 
 <div id="error"></div>
+<div id="warning"></div>
 
 <canvas id="canvas"></canvas>
 
@@ -111,98 +96,166 @@ Format:
 
 function parseValue(value, format) {
 
-    if (format === "binary") {
-        if (!/^[01]{8}$/.test(value)) return null;
-        return parseInt(value, 2);
-    }
-
-    if (format === "decimal") {
-        let num = parseInt(value, 10);
-        return (num >= 0 && num <= 255) ? num : null;
-    }
-
-    if (format === "hex") {
-        if (!/^[0-9a-fA-F]{1,2}$/.test(value)) return null;
-        return parseInt(value, 16);
-    }
-
-    if (format === "octal") {
-        if (!/^[0-7]{1,3}$/.test(value)) return null;
-        let num = parseInt(value, 8);
-        return (num <= 255) ? num : null;
-    }
-
-    if (format === "morse") {
-        if (!/^[\.\-]{8}$/.test(value)) return null;
-        let binary = value.replace(/-/g, "1").replace(/\./g, "0");
-        return parseInt(binary, 2);
-    }
-
-    return null;
+if(format==="binary"){
+if(!/^[01]{8}$/.test(value)) return null;
+return parseInt(value,2);
 }
 
-function renderImage() {
+if(format==="decimal"){
+let n=parseInt(value,10);
+return (n>=0 && n<=255)?n:null;
+}
 
-    const errorDiv = document.getElementById("error");
-    errorDiv.textContent = "";
+if(format==="hex"){
+if(!/^[0-9a-fA-F]{1,2}$/.test(value)) return null;
+return parseInt(value,16);
+}
 
-    const sizeInput = document.getElementById("size").value.split("-");
-    const width = parseInt(sizeInput[0]);
-    const height = parseInt(sizeInput[1]);
-    const format = document.getElementById("format").value;
+if(format==="octal"){
+if(!/^[0-7]{1,3}$/.test(value)) return null;
+let n=parseInt(value,8);
+return (n<=255)?n:null;
+}
 
-    if (!width || !height || width < 1 || height < 1 || width > 1000 || height > 1000) {
-        errorDiv.textContent = "Size must be between 1-1000 pixels.";
-        return;
-    }
+if(format==="morse"){
+if(!/^[\.\-]{8}$/.test(value)) return null;
+let b=value.replace(/-/g,"1").replace(/\./g,"0");
+return parseInt(b,2);
+}
 
-    const totalPixels = width * height;
+return null;
+}
 
-    if (totalPixels > 500000) {
-        if (!confirm("Large image detected. Continue?")) return;
-    }
+function generateStress(){
 
-    const values = document.getElementById("inputData")
-        .value.trim()
-        .split(/\s+/);
+let size=document.getElementById("size").value.split("-");
+let w=parseInt(size[0]);
+let h=parseInt(size[1]);
+let format=document.getElementById("format").value;
+let total=w*h;
+let output="";
 
-    const expectedValues = totalPixels * 3;
+if(w>=64||h>=64){
+document.getElementById("warning").textContent="⚠ Large stress test may freeze slow devices.";
+}else{
+document.getElementById("warning").textContent="";
+}
 
-    if (values.length !== expectedValues) {
-        errorDiv.textContent = "Incorrect number of values. Expected: " + expectedValues;
-        return;
-    }
+for(let i=0;i<total;i++){
 
-    const canvas = document.getElementById("canvas");
-    const ctx = canvas.getContext("2d");
+if(format==="colorcode"){
+let r=Math.floor(Math.random()*256).toString(16).padStart(2,"0");
+let g=Math.floor(Math.random()*256).toString(16).padStart(2,"0");
+let b=Math.floor(Math.random()*256).toString(16).padStart(2,"0");
+output+= "#"+r+g+b+" ";
+}else{
+for(let j=0;j<3;j++){
+let val=Math.floor(Math.random()*256);
 
-    canvas.width = width;
-    canvas.height = height;
+if(format==="binary") output+=val.toString(2).padStart(8,"0")+" ";
+if(format==="decimal") output+=val+" ";
+if(format==="hex") output+=val.toString(16).toUpperCase()+" ";
+if(format==="octal") output+=val.toString(8)+" ";
+if(format==="morse"){
+let bin=val.toString(2).padStart(8,"0");
+output+=bin.replace(/1/g,"-").replace(/0/g,".")+" ";
+}
+}
+}
 
-    const imgData = ctx.createImageData(width, height);
+}
 
-    for (let i = 0; i < totalPixels; i++) {
+document.getElementById("inputData").value=output.trim();
+}
 
-        const r = parseValue(values[i * 3], format);
-        const g = parseValue(values[i * 3 + 1], format);
-        const b = parseValue(values[i * 3 + 2], format);
+function renderImage(mode){
 
-        if (r === null || g === null || b === null) {
-            errorDiv.textContent = "Invalid value detected for selected format.";
-            return;
-        }
+document.getElementById("error").textContent="";
+let size=document.getElementById("size").value.split("-");
+let w=parseInt(size[0]);
+let h=parseInt(size[1]);
+let format=document.getElementById("format").value;
 
-        imgData.data[i * 4] = r;
-        imgData.data[i * 4 + 1] = g;
-        imgData.data[i * 4 + 2] = b;
-        imgData.data[i * 4 + 3] = 255;
-    }
+if(!w||!h||w<1||h<1||w>1000||h>1000){
+document.getElementById("error").textContent="Invalid size.";
+return;
+}
 
-    ctx.putImageData(imgData, 0, 0);
+let canvas=document.getElementById("canvas");
+let ctx=canvas.getContext("2d");
+canvas.width=w;
+canvas.height=h;
+let imgData=ctx.createImageData(w,h);
 
-    const scale = 300 / width;
-    canvas.style.width = (width * scale) + "px";
-    canvas.style.height = (height * scale) + "px";
+let values=document.getElementById("inputData").value.trim().split(/\s+/);
+
+let total=w*h;
+
+if(format==="colorcode"){
+if(values.length!==total){
+document.getElementById("error").textContent="Incorrect number of color codes.";
+return;
+}
+}else{
+if(values.length!==total*3){
+document.getElementById("error").textContent="Incorrect number of values.";
+return;
+}
+}
+
+function drawPixel(i,r,g,b){
+imgData.data[i*4]=r;
+imgData.data[i*4+1]=g;
+imgData.data[i*4+2]=b;
+imgData.data[i*4+3]=255;
+}
+
+if(mode==="slow"){
+let i=0;
+let interval=setInterval(()=>{
+if(i>=total){ clearInterval(interval); ctx.putImageData(imgData,0,0); return;}
+let r,g,b;
+
+if(format==="colorcode"){
+let hex=values[i].replace("#","");
+r=parseInt(hex.substring(0,2),16);
+g=parseInt(hex.substring(2,4),16);
+b=parseInt(hex.substring(4,6),16);
+}else{
+r=parseValue(values[i*3],format);
+g=parseValue(values[i*3+1],format);
+b=parseValue(values[i*3+2],format);
+}
+
+drawPixel(i,r,g,b);
+i++;
+},1);
+}else{
+
+for(let i=0;i<total;i++){
+
+let r,g,b;
+
+if(format==="colorcode"){
+let hex=values[i].replace("#","");
+r=parseInt(hex.substring(0,2),16);
+g=parseInt(hex.substring(2,4),16);
+b=parseInt(hex.substring(4,6),16);
+}else{
+r=parseValue(values[i*3],format);
+g=parseValue(values[i*3+1],format);
+b=parseValue(values[i*3+2],format);
+}
+
+drawPixel(i,r,g,b);
+}
+
+ctx.putImageData(imgData,0,0);
+}
+
+let scale=300/w;
+canvas.style.width=(w*scale)+"px";
+canvas.style.height=(h*scale)+"px";
 }
 
 </script>
