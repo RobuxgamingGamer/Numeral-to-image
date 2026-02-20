@@ -1,10 +1,18 @@
+let container = document.getElementById("threeContainer");
+
 let scene = new THREE.Scene();
-let camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+
+let camera = new THREE.PerspectiveCamera(
+    75,
+    container.clientWidth / container.clientHeight,
+    0.1,
+    1000
+);
+
 let renderer = new THREE.WebGLRenderer({ antialias:true });
-
-const container = document.getElementById("threeContainer");
-
 renderer.setSize(container.clientWidth, container.clientHeight);
+renderer.setPixelRatio(window.devicePixelRatio);
+
 container.appendChild(renderer.domElement);
 
 camera.position.z = 6;
@@ -12,11 +20,8 @@ camera.position.z = 6;
 const light = new THREE.DirectionalLight(0xffffff,1);
 light.position.set(5,5,5);
 scene.add(light);
+scene.add(new THREE.AmbientLight(0x404040));
 
-const ambient = new THREE.AmbientLight(0x404040);
-scene.add(ambient);
-
-let geometry;
 let material = new THREE.MeshStandardMaterial({
     color:0x00ff88,
     transparent:true,
@@ -28,33 +33,30 @@ let material = new THREE.MeshStandardMaterial({
 let mesh;
 
 function createMesh(w,h,t){
+    if(mesh) scene.remove(mesh);
 
-    if(mesh){
-        scene.remove(mesh);
-    }
-
-    geometry = new THREE.BoxGeometry(w,h,t);
+    let geometry = new THREE.BoxGeometry(w,h,t);
     mesh = new THREE.Mesh(geometry,material);
 
-    const edges = new THREE.EdgesGeometry(geometry);
-    const line = new THREE.LineSegments(
+    let edges = new THREE.EdgesGeometry(geometry);
+    let outline = new THREE.LineSegments(
         edges,
         new THREE.LineBasicMaterial({color:0x00ff88})
     );
 
-    mesh.add(line);
-
+    mesh.add(outline);
     scene.add(mesh);
 }
 
 createMesh(2,2,2);
 
 function updateShape(){
-    let val = document.getElementById("size3D").value.split("-");
-    let w=parseFloat(val[0])||2;
-    let h=parseFloat(val[1])||2;
-    let t=parseFloat(val[2])||2;
-    createMesh(w,h,t);
+    let v = document.getElementById("size3D").value.split("-");
+    createMesh(
+        parseFloat(v[0])||2,
+        parseFloat(v[1])||2,
+        parseFloat(v[2])||2
+    );
 }
 
 document.getElementById("opacitySlider")
@@ -64,8 +66,6 @@ document.getElementById("opacitySlider")
 
 const controls = new THREE.OrbitControls(camera,renderer.domElement);
 controls.enableDamping=true;
-controls.dampingFactor=0.08;
-controls.enablePan=false;
 
 function animate(){
     requestAnimationFrame(animate);
@@ -73,3 +73,9 @@ function animate(){
     renderer.render(scene,camera);
 }
 animate();
+
+window.addEventListener("resize",()=>{
+    camera.aspect = container.clientWidth/container.clientHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(container.clientWidth,container.clientHeight);
+});
