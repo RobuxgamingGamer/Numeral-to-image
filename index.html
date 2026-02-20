@@ -5,65 +5,65 @@
 <title>Universal RGB Image Renderer PRO</title>
 
 <style>
-body {
-    background:#0a0a0a;
-    color:#00ff88;
-    font-family:monospace;
-    text-align:center;
-    padding:20px;
+body{
+background:#0a0a0a;
+color:#00ff88;
+font-family:monospace;
+text-align:center;
+padding:20px;
 }
 
-h1 { color:white; }
+h1{color:white;}
 
-.instructions {
-    max-width:900px;
-    margin:auto;
-    text-align:left;
-    color:#cccccc;
-    margin-bottom:20px;
+.instructions{
+max-width:900px;
+margin:auto;
+text-align:left;
+color:#cccccc;
+margin-bottom:20px;
 }
 
-textarea {
-    width:95%;
-    height:200px;
-    background:#111;
-    color:#00ff88;
-    border:1px solid #00ff88;
-    padding:10px;
-    margin-top:10px;
+textarea{
+width:95%;
+height:200px;
+background:#111;
+color:#00ff88;
+border:1px solid #00ff88;
+padding:10px;
+margin-top:10px;
 }
 
-input, select {
-    background:#111;
-    color:#00ff88;
-    border:1px solid #00ff88;
-    padding:6px;
-    margin:5px;
-    text-align:center;
+input,select{
+background:#111;
+color:#00ff88;
+border:1px solid #00ff88;
+padding:6px;
+margin:5px;
+text-align:center;
 }
 
-button {
-    padding:12px 25px;
-    margin:10px;
-    border:none;
-    font-size:16px;
-    cursor:pointer;
+button{
+padding:12px 25px;
+margin:10px;
+border:none;
+font-size:16px;
+cursor:pointer;
 }
 
-#convert { background:#00aa44; color:white; }
-#fast { background:#aa0000; color:white; }
-#slow { background:#0044aa; color:white; }
-#commitStress { background:#0066ff; color:white; }
+#convert{background:#00aa44;color:white;}
+#fast{background:#aa0000;color:white;}
+#slow{background:#0044aa;color:white;}
+#commitStress{background:#0066ff;color:white;}
 
-canvas {
-    margin-top:30px;
-    border:1px solid #00ff88;
-    image-rendering:pixelated;
-    background:black;
+canvas{
+margin-top:30px;
+border:1px solid #00ff88;
+image-rendering:pixelated;
+background:black;
 }
 
-#error { color:red; margin-top:10px; }
-#warning { color:#ff4444; margin-top:10px; }
+#error{color:red;margin-top:10px;}
+#warning{color:#ff4444;margin-top:10px;}
 </style>
 </head>
 
@@ -73,12 +73,10 @@ canvas {
 
 <div class="instructions">
 <b>Instructions:</b><br>
-1. Enter size as Width-Height (1-1000 pixels).<br>
-2. Each pixel requires 3 values (R G B).<br>
-3. Format determines how values are interpreted.<br>
-4. Total values = Width × Height × 3 (except Color Code mode).<br>
-5. Morse: "-" = 1 and "." = 0 (must equal 8 symbols).<br>
-6. Stress Test Mode generates randomized image data automatically.<br>
+• Size range: 1–4000<br>
+• Each pixel = 3 values (R G B)<br>
+• Format determines interpretation<br>
+• Only warning appears at 500×500 or above<br>
 </div>
 
 Size (W-H):
@@ -123,23 +121,20 @@ Mode:
 
 function generateStress(){
 
-if(document.getElementById("modeSelect").value !== "stress"){
-document.getElementById("warning").textContent="Enable Stress Test Mode first.";
-return;
-}
+if(document.getElementById("modeSelect").value!=="stress") return;
 
 let size=document.getElementById("size").value.split("-");
 let w=parseInt(size[0]);
 let h=parseInt(size[1]);
 let format=document.getElementById("format").value;
+
+if(!w||!h||w<1||h<1||w>4000||h>4000){
+document.getElementById("error").textContent="Invalid size.";
+return;
+}
+
 let total=w*h;
 let output="";
-
-if(w>=64||h>=64){
-document.getElementById("warning").textContent="⚠ Large stress test may freeze slower devices.";
-}else{
-document.getElementById("warning").textContent="";
-}
 
 for(let i=0;i<total;i++){
 
@@ -161,13 +156,12 @@ output+=bin.replace(/1/g,"-").replace(/0/g,".")+" ";
 }
 }
 }
-
 }
 
 document.getElementById("inputData").value=output.trim();
 }
 
-function parseValue(value, format){
+function parseValue(value,format){
 
 if(format==="binary"){
 if(!/^[01]{8}$/.test(value)) return null;
@@ -176,7 +170,7 @@ return parseInt(value,2);
 
 if(format==="decimal"){
 let n=parseInt(value,10);
-return (n>=0 && n<=255)?n:null;
+return (n>=0&&n<=255)?n:null;
 }
 
 if(format==="hex"){
@@ -202,16 +196,23 @@ return null;
 function renderImage(mode){
 
 document.getElementById("error").textContent="";
+document.getElementById("warning").textContent="";
 
 let size=document.getElementById("size").value.split("-");
 let w=parseInt(size[0]);
 let h=parseInt(size[1]);
 let format=document.getElementById("format").value;
 
-if(!w||!h||w<1||h<1||w>1000||h>1000){
+if(!w||!h||w<1||h<1||w>4000||h>4000){
 document.getElementById("error").textContent="Invalid size.";
 return;
 }
+
+if(w>=500||h>=500){
+document.getElementById("warning").textContent="⚠ High resolution may consume significant memory.";
+}
+
+let total=w*h;
 
 let canvas=document.getElementById("canvas");
 let ctx=canvas.getContext("2d");
@@ -220,7 +221,6 @@ canvas.height=h;
 let imgData=ctx.createImageData(w,h);
 
 let values=document.getElementById("inputData").value.trim().split(/\s+/);
-let total=w*h;
 
 if(format==="colorcode"){
 if(values.length!==total){
@@ -250,6 +250,7 @@ ctx.putImageData(imgData,0,0);
 return;
 }
 let r,g,b;
+
 if(format==="colorcode"){
 let hex=values[i].replace("#","");
 r=parseInt(hex.substring(0,2),16);
@@ -260,12 +261,14 @@ r=parseValue(values[i*3],format);
 g=parseValue(values[i*3+1],format);
 b=parseValue(values[i*3+2],format);
 }
+
 drawPixel(i,r,g,b);
 i++;
 },1);
 }else{
 for(let i=0;i<total;i++){
 let r,g,b;
+
 if(format==="colorcode"){
 let hex=values[i].replace("#","");
 r=parseInt(hex.substring(0,2),16);
@@ -276,6 +279,7 @@ r=parseValue(values[i*3],format);
 g=parseValue(values[i*3+1],format);
 b=parseValue(values[i*3+2],format);
 }
+
 drawPixel(i,r,g,b);
 }
 ctx.putImageData(imgData,0,0);
