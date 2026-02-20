@@ -1,80 +1,75 @@
-let scene, camera, renderer, mesh, outline;
-let initialized=false;
+let scene = new THREE.Scene();
+let camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+let renderer = new THREE.WebGLRenderer({ antialias:true });
 
-function init3D(){
+const container = document.getElementById("threeContainer");
 
-if(initialized) return;
-initialized=true;
-
-const container=document.getElementById("canvasContainer");
-
-scene=new THREE.Scene();
-scene.background=new THREE.Color(0x000000);
-
-camera=new THREE.PerspectiveCamera(
-75,
-container.clientWidth/container.clientHeight,
-0.1,
-1000
-);
-
-renderer=new THREE.WebGLRenderer({antialias:true});
-renderer.setSize(container.clientWidth,container.clientHeight);
+renderer.setSize(container.clientWidth, container.clientHeight);
 container.appendChild(renderer.domElement);
 
-camera.position.z=6;
+camera.position.z = 6;
 
-const light=new THREE.DirectionalLight(0xffffff,1);
+const light = new THREE.DirectionalLight(0xffffff,1);
 light.position.set(5,5,5);
 scene.add(light);
 
-const ambient=new THREE.AmbientLight(0xffffff,0.4);
+const ambient = new THREE.AmbientLight(0x404040);
 scene.add(ambient);
 
-createBox(2,2,2);
-animate();
-}
-
-function animate(){
-requestAnimationFrame(animate);
-if(mesh){
-mesh.rotation.x+=0.01;
-mesh.rotation.y+=0.01;
-}
-renderer.render(scene,camera);
-}
-
-function createBox(w,h,t){
-
-if(mesh){
-scene.remove(mesh);
-scene.remove(outline);
-mesh.geometry.dispose();
-}
-
-const geometry=new THREE.BoxGeometry(w,h,t);
-const material=new THREE.MeshStandardMaterial({
-color:0x00ff88,
-metalness:0.4,
-roughness:0.4
+let geometry;
+let material = new THREE.MeshStandardMaterial({
+    color:0x00ff88,
+    transparent:true,
+    opacity:1,
+    metalness:0.3,
+    roughness:0.4
 });
 
-mesh=new THREE.Mesh(geometry,material);
-scene.add(mesh);
+let mesh;
 
-const edges=new THREE.EdgesGeometry(geometry);
-outline=new THREE.LineSegments(
-edges,
-new THREE.LineBasicMaterial({color:0x000000})
-);
-scene.add(outline);
+function createMesh(w,h,t){
+
+    if(mesh){
+        scene.remove(mesh);
+    }
+
+    geometry = new THREE.BoxGeometry(w,h,t);
+    mesh = new THREE.Mesh(geometry,material);
+
+    const edges = new THREE.EdgesGeometry(geometry);
+    const line = new THREE.LineSegments(
+        edges,
+        new THREE.LineBasicMaterial({color:0x00ff88})
+    );
+
+    mesh.add(line);
+
+    scene.add(mesh);
 }
+
+createMesh(2,2,2);
 
 function updateShape(){
-const input=document.getElementById("size3d").value.split("-");
-let w=parseFloat(input[0]);
-let h=parseFloat(input[1]);
-let t=parseFloat(input[2]);
-if(!w||!h||!t) return;
-createBox(w,h,t);
+    let val = document.getElementById("size3D").value.split("-");
+    let w=parseFloat(val[0])||2;
+    let h=parseFloat(val[1])||2;
+    let t=parseFloat(val[2])||2;
+    createMesh(w,h,t);
 }
+
+document.getElementById("opacitySlider")
+.addEventListener("input",function(){
+    material.opacity=parseFloat(this.value);
+});
+
+const controls = new THREE.OrbitControls(camera,renderer.domElement);
+controls.enableDamping=true;
+controls.dampingFactor=0.08;
+controls.enablePan=false;
+
+function animate(){
+    requestAnimationFrame(animate);
+    controls.update();
+    renderer.render(scene,camera);
+}
+animate();
