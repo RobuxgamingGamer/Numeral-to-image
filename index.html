@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Binary Image Renderer</title>
+
+<style>
+body {
+    background: #111;
+    color: white;
+    font-family: monospace;
+    text-align: center;
+    padding: 20px;
+}
+
+textarea {
+    width: 95%;
+    height: 200px;
+    margin-top: 10px;
+    background: #222;
+    color: #00ff88;
+    border: 1px solid #00ff88;
+    padding: 10px;
+}
+
+input {
+    background: #222;
+    color: white;
+    border: 1px solid #00ff88;
+    padding: 5px;
+    width: 150px;
+    text-align: center;
+}
+
+button {
+    background: #00aa44;
+    color: white;
+    border: none;
+    padding: 15px 40px;
+    font-size: 18px;
+    margin-top: 20px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #00cc55;
+}
+
+canvas {
+    margin-top: 30px;
+    border: 1px solid white;
+    image-rendering: pixelated;
+    max-width: 95%;
+}
+
+.instructions {
+    text-align: left;
+    max-width: 900px;
+    margin: auto;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Binary → Image Renderer</h1>
+
+<div class="instructions">
+<p><b>Instructions:</b></p>
+<p>
+1. Enter size as Width-Height (min 1-1, max 1000-1000)<br>
+2. Each pixel requires 3 binary groups (R G B)<br>
+3. Each group must be exactly 8 bits<br>
+4. Total groups = Width × Height × 3<br>
+</p>
+</div>
+
+<br>
+
+Size (W-H):
+<input id="size" value="2-2">
+
+<br><br>
+
+<textarea id="binaryInput" placeholder="Enter binary here..."></textarea>
+
+<br>
+
+<button onclick="renderImage()">Convert</button>
+
+<br><br>
+
+<canvas id="canvas"></canvas>
+
+<script>
+function renderImage() {
+
+    const sizeInput = document.getElementById("size").value.split("-");
+    let width = parseInt(sizeInput[0]);
+    let height = parseInt(sizeInput[1]);
+
+    if (width < 1 || height < 1 || width > 1000 || height > 1000) {
+        alert("Size must be between 1-1 and 1000-1000");
+        return;
+    }
+
+    const binary = document.getElementById("binaryInput")
+        .value.trim()
+        .split(/\s+/);
+
+    const expectedGroups = width * height * 3;
+
+    if (binary.length !== expectedGroups) {
+        alert("Incorrect number of binary groups.\nExpected: " + expectedGroups);
+        return;
+    }
+
+    for (let group of binary) {
+        if (!/^[01]{8}$/.test(group)) {
+            alert("Each binary group must be exactly 8 bits.");
+            return;
+        }
+    }
+
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+
+    canvas.width = width;
+    canvas.height = height;
+
+    const imgData = ctx.createImageData(width, height);
+
+    for (let i = 0; i < width * height; i++) {
+
+        const r = parseInt(binary[i * 3], 2);
+        const g = parseInt(binary[i * 3 + 1], 2);
+        const b = parseInt(binary[i * 3 + 2], 2);
+
+        imgData.data[i * 4] = r;
+        imgData.data[i * 4 + 1] = g;
+        imgData.data[i * 4 + 2] = b;
+        imgData.data[i * 4 + 3] = 255;
+    }
+
+    ctx.putImageData(imgData, 0, 0);
+}
+</script>
+
+</body>
+</html>
