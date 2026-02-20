@@ -1,14 +1,9 @@
-// ===== 2D ENGINE =====
+// ==============================
+// UNIVERSAL RGB IMAGE RENDERER - 2D ENGINE
+// ==============================
 
 const canvas2D = document.getElementById("canvas2D");
 const ctx = canvas2D.getContext("2d");
-
-function resize2D(){
-canvas2D.width = canvas2D.clientWidth;
-canvas2D.height = canvas2D.clientHeight;
-}
-window.addEventListener("resize", resize2D);
-resize2D();
 
 // ================= PARSER =================
 
@@ -139,6 +134,10 @@ let r,g,b;
 
 if(format==="colorcode"){
 let hex=values[i].replace("#","");
+if(hex.length!==6){
+document.getElementById("error").textContent="Invalid color code.";
+return;
+}
 r=parseInt(hex.substring(0,2),16);
 g=parseInt(hex.substring(2,4),16);
 b=parseInt(hex.substring(4,6),16);
@@ -146,6 +145,11 @@ b=parseInt(hex.substring(4,6),16);
 r=parseValue(values[i*3],format);
 g=parseValue(values[i*3+1],format);
 b=parseValue(values[i*3+2],format);
+
+if(r===null||g===null||b===null){
+document.getElementById("error").textContent="Invalid value detected.";
+return;
+}
 }
 
 imgData.data[i*4]=r;
@@ -163,9 +167,13 @@ canvas2D.style.height=(h*scale)+"px";
 let endTime = performance.now();
 let renderTime = (endTime - startTime).toFixed(2);
 
+// FPS calculation
+let fps = (1000 / renderTime).toFixed(2);
+
 document.getElementById("stats").textContent =
 "Pixels: " + total.toLocaleString() +
-" | Render Time: " + renderTime + " ms";
+" | Render Time: " + renderTime + " milliseconds" +
+" | FPS: " + fps;
 }
 
 // ================= PNG DOWNLOAD =================
