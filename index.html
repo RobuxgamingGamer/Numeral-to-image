@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Universal RGB Image Renderer PRO</title>
+<title>Universal RGB Image Renderer</title>
 
 <style>
 body{
@@ -69,14 +69,14 @@ background:black;
 
 <body>
 
-<h1>Universal RGB Image Renderer PRO</h1>
+<h1>Universal RGB Image Renderer</h1>
 
 <div class="instructions">
 <b>Instructions:</b><br>
-• Size range: 1–4000<br>
+• Size range: 1–1500<br>
 • Each pixel = 3 values (R G B)<br>
-• Format determines interpretation<br>
-• Only warning appears at 500×500 or above<br>
+• Color Code mode uses one #RRGGBB per pixel<br>
+• Warning appears at 500×500 or above<br>
 </div>
 
 Size (W-H):
@@ -128,7 +128,7 @@ let w=parseInt(size[0]);
 let h=parseInt(size[1]);
 let format=document.getElementById("format").value;
 
-if(!w||!h||w<1||h<1||w>4000||h>4000){
+if(!w||!h||w<1||h<1||w>1500||h>1500){
 document.getElementById("error").textContent="Invalid size.";
 return;
 }
@@ -203,7 +203,7 @@ let w=parseInt(size[0]);
 let h=parseInt(size[1]);
 let format=document.getElementById("format").value;
 
-if(!w||!h||w<1||h<1||w>4000||h>4000){
+if(!w||!h||w<1||h<1||w>1500||h>1500){
 document.getElementById("error").textContent="Invalid size.";
 return;
 }
@@ -218,8 +218,8 @@ let canvas=document.getElementById("canvas");
 let ctx=canvas.getContext("2d");
 canvas.width=w;
 canvas.height=h;
-let imgData=ctx.createImageData(w,h);
 
+let imgData=ctx.createImageData(w,h);
 let values=document.getElementById("inputData").value.trim().split(/\s+/);
 
 if(format==="colorcode"){
@@ -249,6 +249,7 @@ clearInterval(interval);
 ctx.putImageData(imgData,0,0);
 return;
 }
+
 let r,g,b;
 
 if(format==="colorcode"){
@@ -264,9 +265,13 @@ b=parseValue(values[i*3+2],format);
 
 drawPixel(i,r,g,b);
 i++;
+
 },1);
+
 }else{
+
 for(let i=0;i<total;i++){
+
 let r,g,b;
 
 if(format==="colorcode"){
@@ -282,6 +287,7 @@ b=parseValue(values[i*3+2],format);
 
 drawPixel(i,r,g,b);
 }
+
 ctx.putImageData(imgData,0,0);
 }
 
@@ -293,4 +299,4 @@ canvas.style.height=(h*scale)+"px";
 </script>
 
 </body>
-</html> 
+</html>
