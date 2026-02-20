@@ -2,112 +2,140 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Numeral Engine V3</title>
 
 <style>
 body{
-    background:black;
+    background:#000;
     color:#00ff88;
     font-family:monospace;
     text-align:center;
+    margin:0;
+    padding:20px;
 }
 
-button{
-    background:black;
-    border:1px solid #00ff88;
+h2{ margin-top:10px; }
+
+p{
+    font-size:14px;
+    opacity:0.8;
+}
+
+button, input, select, textarea{
+    font-size:18px;
+    background:#000;
     color:#00ff88;
-    padding:6px 14px;
+    border:1px solid #00ff88;
+    padding:10px 16px;
     margin:6px;
-    cursor:pointer;
 }
 
-input, select{
-    background:black;
-    color:#00ff88;
-    border:1px solid #00ff88;
-    padding:4px;
+textarea{
+    width:90%;
+    max-width:400px;
 }
 
 canvas{
     border:1px solid #00ff88;
     margin-top:10px;
+    image-rendering:pixelated;
 }
 
 #threeContainer{
-    width:90%;
-    height:500px;
+    width:95%;
+    height:400px;
     margin:auto;
     border:1px solid #00ff88;
 }
+
+.section{
+    margin-top:20px;
+}
 </style>
 </head>
+
 <body>
 
 <h2>Numeral Engine V3</h2>
 
+<p>
+2D → Size format: X-Y (example: 4-4) <br>
+3D → Size format: X-Y-Z (example: 3-2-5) <br>
+Swipe to rotate • Pinch to zoom
+</p>
+
 <button onclick="show2D()">2D Mode</button>
 <button onclick="show3D()">3D Mode</button>
 
-<div id="mode2D">
-    <h3>2D Engine</h3>
+<!-- ================= 2D ================= -->
+<div id="mode2D" class="section">
 
-    Size (X-Y):
-    <input id="size" value="2-2">
-    Format:
-    <select id="format">
-        <option value="binary">Binary</option>
-        <option value="decimal">Decimal</option>
-        <option value="hex">Hex</option>
-        <option value="octal">Octal</option>
-        <option value="morse">Morse</option>
-        <option value="colorcode">ColorCode</option>
-    </select>
+<h3>2D Engine</h3>
 
-    <br><br>
+Size (X-Y):
+<input id="size" value="2-2">
 
-    <select id="modeSelect">
-        <option value="normal">Normal</option>
-        <option value="stress">Stress Test Mode</option>
-    </select>
+Format:
+<select id="format">
+<option value="binary">Binary</option>
+<option value="decimal">Decimal</option>
+<option value="hex">Hex</option>
+<option value="octal">Octal</option>
+<option value="morse">Morse</option>
+<option value="colorcode">ColorCode</option>
+</select>
 
-    <button onclick="generateStress()">Commit Stress Test</button>
+<br>
 
-    <br><br>
+<select id="modeSelect">
+<option value="normal">Normal</option>
+<option value="stress">Stress Test Mode</option>
+</select>
 
-    <textarea id="inputData" rows="4" cols="40"></textarea>
+<button onclick="generateStress()">Commit Stress Test</button>
 
-    <br>
+<br>
 
-    <button onclick="renderImage()">Convert</button>
-    <button onclick="downloadPNG()">Download PNG</button>
+<textarea id="inputData" rows="4"></textarea>
 
-    <p id="warning"></p>
-    <p id="error"></p>
-    <p id="stats"></p>
+<br>
 
-    <canvas id="canvas2D"></canvas>
-</div>
+<button onclick="renderImage()">Convert</button>
+<button onclick="downloadPNG()">Download PNG</button>
 
-<div id="mode3D" style="display:none;">
+<p id="warning"></p>
+<p id="error"></p>
+<p id="stats"></p>
 
-    <h3>3D Engine</h3>
-
-    3D Size (X-Y-Z):
-    <input id="size3D" value="2-2-2">
-    <button onclick="updateShape()">Update Shape</button>
-
-    <br><br>
-
-    Transparency:
-    <input type="range" id="opacitySlider" min="0" max="1" step="0.01" value="1">
-
-    <div id="threeContainer"></div>
+<canvas id="canvas2D"></canvas>
 
 </div>
 
+<!-- ================= 3D ================= -->
+<div id="mode3D" class="section" style="display:none;">
+
+<h3>3D Engine</h3>
+
+Size (X-Y-Z):
+<input id="size3D" value="2-2-2">
+
+<button onclick="updateShape()">Update Shape</button>
+
+<br>
+
+Transparency:
+<input type="range" id="opacitySlider" min="0" max="1" step="0.01" value="1">
+
+<div id="threeContainer"></div>
+
+</div>
+
+<!-- THREE -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
+<!-- ENGINES -->
 <script src="js/engine2d.js"></script>
 <script src="js/engine3d.js"></script>
 
