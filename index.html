@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Numeral Engine V3</title>
+<title>Numeral Engine V4</title>
 
 <style>
 body{
@@ -15,12 +15,9 @@ body{
     padding:20px;
 }
 
-h2{ margin-top:10px; }
+h2{ margin-bottom:10px; }
 
-p{
-    font-size:14px;
-    opacity:0.8;
-}
+p{ font-size:14px; opacity:0.8; }
 
 button, input, select, textarea{
     font-size:18px;
@@ -32,36 +29,33 @@ button, input, select, textarea{
 }
 
 textarea{
-    width:90%;
-    max-width:400px;
+    width:95%;
+    max-width:500px;
 }
 
 canvas{
     border:1px solid #00ff88;
-    margin-top:10px;
     image-rendering:pixelated;
 }
 
 #threeContainer{
-    width:95%;
-    height:400px;
-    margin:auto;
+    width:100%;
+    height:420px;
     border:1px solid #00ff88;
+    margin-top:10px;
 }
 
-.section{
-    margin-top:20px;
-}
+.section{ margin-top:20px; }
 </style>
 </head>
 
 <body>
 
-<h2>Numeral Engine V3</h2>
+<h2>Numeral Engine V4</h2>
 
 <p>
-2D → Size format: X-Y (example: 4-4) <br>
-3D → Size format: X-Y-Z (example: 3-2-5) <br>
+2D → X-Y (4-4) <br>
+3D → X-Y-Z (3-2-5) <br>
 Swipe to rotate • Pinch to zoom
 </p>
 
@@ -108,7 +102,7 @@ Format:
 <p id="error"></p>
 <p id="stats"></p>
 
-<canvas id="canvas2D"></canvas>
+<canvas id="canvas2D" width="300" height="300"></canvas>
 
 </div>
 
@@ -119,7 +113,6 @@ Format:
 
 Size (X-Y-Z):
 <input id="size3D" value="2-2-2">
-
 <button onclick="updateShape()">Update Shape</button>
 
 <br>
@@ -131,11 +124,9 @@ Transparency:
 
 </div>
 
-<!-- THREE -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
-<!-- ENGINES -->
 <script src="js/engine2d.js"></script>
 <script src="js/engine3d.js"></script>
 
