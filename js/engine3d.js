@@ -1,31 +1,39 @@
 let scene, camera, renderer, controls, mesh, material;
-
-const container = document.getElementById("threeContainer");
+let initialized=false;
+const container=document.getElementById("threeContainer");
 
 function init3D(){
 
-scene = new THREE.Scene();
+if(initialized) return;
 
-camera = new THREE.PerspectiveCamera(
+if(container.offsetHeight===0){
+setTimeout(init3D,100);
+return;
+}
+
+scene=new THREE.Scene();
+
+camera=new THREE.PerspectiveCamera(
 75,
-container.clientWidth/container.clientHeight,
+container.offsetWidth/container.offsetHeight,
 0.1,
 1000
 );
 
-renderer = new THREE.WebGLRenderer({antialias:true});
+renderer=new THREE.WebGLRenderer({antialias:true});
 renderer.setPixelRatio(window.devicePixelRatio);
-renderer.setSize(container.clientWidth,container.clientHeight);
+renderer.setSize(container.offsetWidth,container.offsetHeight);
 
 container.innerHTML="";
 container.appendChild(renderer.domElement);
 
 camera.position.z=6;
 
-const light=new THREE.DirectionalLight(0xffffff,1);
+scene.add(new THREE.AmbientLight(0x404040));
+
+let light=new THREE.DirectionalLight(0xffffff,1);
 light.position.set(5,5,5);
 scene.add(light);
-scene.add(new THREE.AmbientLight(0x404040));
 
 material=new THREE.MeshStandardMaterial({
 color:0x00ff88,
@@ -39,9 +47,11 @@ controls=new THREE.OrbitControls(camera,renderer.domElement);
 controls.enableDamping=true;
 
 animate();
+initialized=true;
 }
 
 function createMesh(x,y,z){
+
 if(mesh) scene.remove(mesh);
 
 let geometry=new THREE.BoxGeometry(x,y,z);
@@ -58,6 +68,7 @@ scene.add(mesh);
 }
 
 function updateShape(){
+if(!initialized) init3D();
 let v=document.getElementById("size3D").value.split("-");
 createMesh(
 parseFloat(v[0])||2,
@@ -73,10 +84,6 @@ if(material) material.opacity=parseFloat(this.value);
 
 function animate(){
 requestAnimationFrame(animate);
-controls.update();
-renderer.render(scene,camera);
+if(controls) controls.update();
+if(renderer) renderer.render(scene,camera);
 }
-
-window.addEventListener("load",()=>{
-setTimeout(init3D,200);
-});
