@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Numeral Engine V4</title>
+<title>Numeral Engine V5</title>
 
 <style>
 body{
@@ -17,7 +17,12 @@ body{
 
 h2{ margin-bottom:10px; }
 
-p{ font-size:14px; opacity:0.8; }
+.instructions{
+    font-size:14px;
+    opacity:0.85;
+    margin-bottom:15px;
+    line-height:1.5em;
+}
 
 button, input, select, textarea{
     font-size:18px;
@@ -45,19 +50,33 @@ canvas{
     margin-top:10px;
 }
 
-.section{ margin-top:20px; }
+.section{
+    margin-top:20px;
+}
 </style>
 </head>
 
 <body>
 
-<h2>Numeral Engine V4</h2>
+<h2>Numeral Engine</h2>
 
-<p>
-2D → X-Y (4-4) <br>
-3D → X-Y-Z (3-2-5) <br>
-Swipe to rotate • Pinch to zoom
-</p>
+<div class="instructions">
+<strong>2D Engine Instructions:</strong><br>
+• Size format: X-Y (example: 4-4 means width 4 pixels, height 4 pixels)<br>
+• Binary / Morse require 8 characters per value<br>
+• Decimal range: 0–255<br>
+• Hex range: 00–FF<br>
+• Octal max: 377<br>
+• ColorCode format: #RRGGBB<br>
+• Stress Mode generates random valid values automatically<br><br>
+
+<strong>3D Engine Instructions:</strong><br>
+• Size format: X-Y-Z (width-height-depth)<br>
+• Example: 3-2-5<br>
+• Swipe to rotate<br>
+• Pinch to zoom<br>
+• Transparency slider changes opacity
+</div>
 
 <button onclick="show2D()">2D Mode</button>
 <button onclick="show3D()">3D Mode</button>
@@ -82,6 +101,7 @@ Format:
 
 <br>
 
+Mode:
 <select id="modeSelect">
 <option value="normal">Normal</option>
 <option value="stress">Stress Test Mode</option>
@@ -98,11 +118,9 @@ Format:
 <button onclick="renderImage()">Convert</button>
 <button onclick="downloadPNG()">Download PNG</button>
 
-<p id="warning"></p>
 <p id="error"></p>
-<p id="stats"></p>
 
-<canvas id="canvas2D" width="300" height="300"></canvas>
+<canvas id="canvas2D"></canvas>
 
 </div>
 
@@ -132,12 +150,14 @@ Transparency:
 
 <script>
 function show2D(){
-    document.getElementById("mode2D").style.display="block";
-    document.getElementById("mode3D").style.display="none";
+document.getElementById("mode2D").style.display="block";
+document.getElementById("mode3D").style.display="none";
 }
+
 function show3D(){
-    document.getElementById("mode2D").style.display="none";
-    document.getElementById("mode3D").style.display="block";
+document.getElementById("mode2D").style.display="none";
+document.getElementById("mode3D").style.display="block";
+init3D();
 }
 </script>
 
