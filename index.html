@@ -3,84 +3,61 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Numeral Engine V6</title>
+<title>Numeral Engine V7</title>
 
 <style>
 body{
-    background:#000;
-    color:#00ff88;
-    font-family:monospace;
-    text-align:center;
-    margin:0;
-    padding:20px;
+background:#000;
+color:#00ff88;
+font-family:monospace;
+text-align:center;
+margin:0;
+padding:20px;
 }
 
-h2{ margin-bottom:10px; }
-
-.instructions{
-    font-size:14px;
-    opacity:0.85;
-    margin-bottom:20px;
-    line-height:1.6em;
+button,input,select,textarea{
+font-size:16px;
+background:#000;
+color:#00ff88;
+border:1px solid #00ff88;
+padding:6px 10px;
+margin:5px;
 }
 
-button, input, select, textarea{
-    font-size:17px;
-    background:#000;
-    color:#00ff88;
-    border:1px solid #00ff88;
-    padding:8px 14px;
-    margin:6px;
-}
-
-textarea{
-    width:95%;
-    max-width:600px;
-}
+textarea{width:95%;max-width:600px;}
 
 canvas{
-    border:1px solid #00ff88;
-    image-rendering:pixelated;
+border:1px solid #00ff88;
+image-rendering:pixelated;
 }
 
 #threeContainer{
-    width:100%;
-    height:420px;
-    border:1px solid #00ff88;
-    margin-top:10px;
+width:100%;
+height:420px;
+border:1px solid #00ff88;
+margin-top:10px;
 }
 
-.section{ margin-top:25px; }
-.hidden{ display:none; }
+.hidden{display:none;}
+
+.stats{
+margin-top:8px;
+font-size:14px;
+opacity:0.8;
+}
 </style>
 </head>
 
 <body>
 
-<h2>Numeral Engine V6</h2>
-
-<div class="instructions">
-
-<strong>2D Engine</strong><br>
-• Size format: X-Y (example: 4-4)<br>
-• Numeric formats require R G B values<br>
-• ColorCode requires #RRGGBB<br>
-• Stress Mode auto-generates correct values<br><br>
-
-<strong>3D Engine</strong><br>
-• Size format: X-Y-Z (example: 2-2-2)<br>
-• Edit Cube → voxel grid coloring<br>
-• Edit All 6 Faces → single cube with 6 colored faces<br>
-• Swipe to rotate • Pinch to zoom<br>
-• Voxel limit: 10-10-10
-</div>
+<h2>Numeral Engine V7</h2>
 
 <button onclick="show2D()">2D Mode</button>
 <button onclick="show3D()">3D Mode</button>
 
 <!-- ================= 2D ================= -->
 
-<div id="mode2D" class="section">
+<div id="mode2D">
 
 <h3>2D Engine</h3>
 
@@ -97,15 +74,12 @@ Format:
 <option value="colorcode">ColorCode</option>
 </select>
 
-<br>
-
-Mode:
 <select id="modeSelect">
 <option value="normal">Normal</option>
 <option value="stress">Stress Test Mode</option>
 </select>
 
-<button onclick="generateStress()">Commit Stress Test</button>
+<button onclick="generateStress()">Stress</button>
 
 <br>
 
@@ -116,7 +90,11 @@ Mode:
 <button onclick="renderImage()">Convert</button>
 <button onclick="downloadPNG()">Download PNG</button>
 
-<br><br>
+<div class="stats">
+<span id="stats2D"></span>
+</div>
+
+<br>
 
 <canvas id="canvas2D"></canvas>
 
@@ -124,7 +102,7 @@ Mode:
 
 <!-- ================= 3D ================= -->
 
-<div id="mode3D" class="section hidden">
+<div id="mode3D" class="hidden">
 
 <h3>3D Engine</h3>
 
@@ -141,76 +119,65 @@ Format:
 <option value="colorcode">ColorCode</option>
 </select>
 
-<br>
-
 <button onclick="setEditMode('cube')">Edit Cube</button>
-<button onclick="setEditMode('faces')">Edit All 6 Faces</button>
+<button onclick="setEditMode('faces')">Edit Faces</button>
 
-<br><br>
-
-<!-- Cube Editor -->
-<div id="cubeEditor">
-
-Mode:
 <select id="modeSelect3D">
 <option value="normal">Normal</option>
 <option value="stress">Stress Test Mode</option>
 </select>
 
-<button onclick="generateStress3D()">Commit Stress Test</button>
+<button onclick="generateStress3D()">Stress</button>
 
 <br>
 
+<div id="cubeEditor">
 <textarea id="inputData3D" rows="4"></textarea>
-
 </div>
 
-<!-- Face Editor -->
 <div id="faceEditor" class="hidden">
-
 Front: <input id="faceFront"><br>
 Back: <input id="faceBack"><br>
 Left: <input id="faceLeft"><br>
 Right: <input id="faceRight"><br>
 Top: <input id="faceTop"><br>
 Bottom: <input id="faceBottom"><br>
-
 </div>
 
 <br>
 
 <button onclick="convert3D()">Convert</button>
 
-<br><br>
+<br>
 
 Transparency:
 <input type="range" id="opacitySlider" min="0" max="1" step="0.01" value="1">
+
+<div class="stats">
+<span id="stats3D"></span>
+</div>
 
 <div id="threeContainer"></div>
 
 </div>
 
-<!-- Three.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
-<!-- Engines -->
 <script src="js/engine2d.js"></script>
 <script src="js/engine3d.js"></script>
 
 <script>
-
 function show2D(){
-    document.getElementById("mode2D").classList.remove("hidden");
-    document.getElementById("mode3D").classList.add("hidden");
+document.getElementById("mode2D").classList.remove("hidden");
+document.getElementById("mode3D").classList.add("hidden");
 }
 
 function show3D(){
-    document.getElementById("mode2D").classList.add("hidden");
-    document.getElementById("mode3D").classList.remove("hidden");
-    init3D();
+document.getElementById("mode2D").classList.add("hidden");
+document.getElementById("mode3D").classList.remove("hidden");
+init3D();
 }
-
 </script>
 
 </body>
