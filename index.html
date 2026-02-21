@@ -1,124 +1,124 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Numeral Engine GOLD CORE</title>
+<title>Numeral Voxel Engine — GOLD BUILD</title>
 
 <style>
-body{
-background:#000;
-color:#00ff88;
-font-family:monospace;
-margin:0;
-padding:20px;
-text-align:center;
+
+/* ================= GLOBAL ================= */
+
+body {
+  background: black;
+  color: #00ff88;
+  font-family: monospace;
+  margin: 0;
+  padding: 20px;
 }
 
-h2{margin-bottom:10px;}
-
-.section{
-border:1px solid #00ff88;
-padding:15px;
-margin-top:20px;
+h1, h2, h3 {
+  text-align: center;
 }
 
-.instructions{
-text-align:left;
-max-width:900px;
-margin:0 auto 20px auto;
-font-size:14px;
-line-height:1.6em;
-border:1px solid #00ff88;
-padding:15px;
+section {
+  border: 2px solid #00ff88;
+  padding: 20px;
+  margin-top: 30px;
 }
 
-textarea{
-width:95%;
-max-width:900px;
-height:120px;
-background:#000;
-color:#00ff88;
-border:1px solid #00ff88;
-padding:8px;
-margin-top:8px;
+button {
+  background: black;
+  border: 2px solid #00ff88;
+  color: #00ff88;
+  padding: 10px 15px;
+  margin: 5px;
+  cursor: pointer;
 }
 
-button{
-background:#000;
-color:#00ff88;
-border:1px solid #00ff88;
-padding:6px 12px;
-margin:5px;
-cursor:pointer;
+button.active {
+  background: #00ff88;
+  color: black;
 }
 
-button.active{
-background:#00ff88;
-color:#000;
+textarea, input, select {
+  background: black;
+  border: 2px solid #00ff88;
+  color: #00ff88;
+  padding: 8px;
+  width: 100%;
+  margin-top: 8px;
 }
 
-input,select{
-background:#000;
-color:#00ff88;
-border:1px solid #00ff88;
-padding:5px;
-margin:5px;
+textarea {
+  min-height: 120px;
+  resize: vertical;
 }
 
-canvas{
-border:1px solid #00ff88;
-display:block;
-margin:10px auto;
-image-rendering:pixelated;
-max-width:100%;
-height:auto;
+.hidden {
+  display: none;
 }
 
-#threeContainer{
-width:100%;
-height:500px;
-border:1px solid #00ff88;
-margin-top:10px;
+.error-text {
+  color: red;
+  margin-top: 10px;
 }
 
-.error{color:#ff4444;}
-.stats{margin-top:8px;}
+.stats-text {
+  margin-top: 10px;
+}
 
-.hidden{display:none;}
+.mode-switch {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.opacity-block {
+  margin-top: 20px;
+}
+
+#threeContainer {
+  width: 100%;
+  height: 500px;
+  border: 2px solid #00ff88;
+  margin-top: 20px;
+}
+
 </style>
 </head>
-
 <body>
 
-<h2>Numeral Engine — Rebuilt Core</h2>
+<h1>Numeral Voxel Engine — GOLD BUILD</h1>
 
-<div class="instructions">
-<b>2D Engine:</b><br>
-• Max size: 1500-1500<br>
-• ColorCode = 1 value per pixel<br>
-• Others = 3 values per pixel<br><br>
+<section>
+<h3>GLOBAL RULES:</h3>
+<ul>
+<li>FPS + ms calculated only during Convert</li>
+<li>Cube mode max 10-10-10 (solid)</li>
+<li>Faces mode max 25-25-25 (hollow)</li>
+<li>2D max 1500-1500</li>
+<li>Binary/Decimal/Hex/Octal/Morse = 3 values per pixel</li>
+<li>ColorCode = 1 value per pixel (#RRGGBB)</li>
+</ul>
+</section>
 
-<b>3D Engine:</b><br>
-• Cube mode: max 10-10-10 (solid)<br>
-• Faces mode: max 25-25-25 (hollow)<br>
-• 6 separate face inputs<br>
-• Stats calculated only during convert<br>
+
+<div class="mode-switch">
+<button id="mode2DBtn">2D Mode</button>
+<button id="mode3DBtn">3D Mode</button>
 </div>
 
-<button type="button" id="btn2D">2D Mode</button>
-<button type="button" id="btn3D">3D Mode</button>
 
-<!-- ==================== 2D ==================== -->
+<!-- ======================= 2D SECTION ======================= -->
 
-<div id="section2D" class="section">
+<section id="engine2DSection">
 
-<h3>2D Engine</h3>
+<h2>2D Engine</h2>
 
-Size (X-Y):
-<input id="size2D" value="2-2">
+<label>Size (X-Y):</label>
+<input id="size2D" type="text" value="2-2">
 
-Format:
+<label>Format:</label>
 <select id="format2D">
 <option value="binary">Binary</option>
 <option value="decimal">Decimal</option>
@@ -128,30 +128,32 @@ Format:
 <option value="colorcode">ColorCode</option>
 </select>
 
-<br>
+<div>
+<button id="stress2DBtn">Stress Test Mode</button>
+<button id="convert2DBtn">Convert</button>
+</div>
 
-<button type="button" id="stress2DBtn">Stress Test Mode</button>
-<button type="button" id="convert2DBtn">Convert</button>
-
-<div class="error" id="error2D"></div>
-<div class="stats" id="stats2D"></div>
+<div id="error2D" class="error-text"></div>
+<div id="stats2D" class="stats-text"></div>
 
 <textarea id="input2D"></textarea>
 
-<canvas id="canvas2D"></canvas>
+<canvas id="canvas2D" width="500" height="500"
+style="border:2px solid #00ff88; margin-top:20px;"></canvas>
 
-</div>
+</section>
 
-<!-- ==================== 3D ==================== -->
 
-<div id="section3D" class="section hidden">
+<!-- ======================= 3D SECTION ======================= -->
 
-<h3>3D Engine</h3>
+<section id="engine3DSection" class="hidden">
 
-Size (X-Y-Z):
-<input id="size3D" value="2-2-2">
+<h2>3D Engine</h2>
 
-Format:
+<label>Size (X-Y-Z):</label>
+<input id="size3D" type="text" value="2-2-2">
+
+<label>Format:</label>
 <select id="format3D">
 <option value="binary">Binary</option>
 <option value="decimal">Decimal</option>
@@ -161,77 +163,89 @@ Format:
 <option value="colorcode">ColorCode</option>
 </select>
 
-<br>
+<div>
+<button id="cubeModeBtn" class="active">Edit Cube</button>
+<button id="facesModeBtn">Edit Faces</button>
+</div>
 
-<button type="button" id="cubeModeBtn" class="active">Edit Cube</button>
-<button type="button" id="facesModeBtn">Edit Faces</button>
+<div>
+<button id="stress3DBtn">Stress Test Mode</button>
+<button id="convert3DBtn">Convert</button>
+</div>
 
-<br>
+<div id="error3D" class="error-text"></div>
+<div id="stats3D" class="stats-text"></div>
 
-<button type="button" id="stress3DBtn">Stress Test Mode</button>
-<button type="button" id="convert3DBtn">Convert</button>
 
-<div class="error" id="error3D"></div>
-<div class="stats" id="stats3D"></div>
-
+<!-- Cube input -->
 <div id="cubeInputBlock">
 <textarea id="input3D"></textarea>
 </div>
 
+
+<!-- Faces input -->
 <div id="facesInputBlock" class="hidden">
 
-Front:<br>
+<h3>Front</h3>
 <textarea id="faceFront"></textarea>
 
-Back:<br>
+<h3>Back</h3>
 <textarea id="faceBack"></textarea>
 
-Left:<br>
+<h3>Left</h3>
 <textarea id="faceLeft"></textarea>
 
-Right:<br>
+<h3>Right</h3>
 <textarea id="faceRight"></textarea>
 
-Top:<br>
+<h3>Top</h3>
 <textarea id="faceTop"></textarea>
 
-Bottom:<br>
+<h3>Bottom</h3>
 <textarea id="faceBottom"></textarea>
 
 </div>
 
-<br>
 
-Transparency:
-<input type="range" id="opacitySlider" min="0" max="1" step="0.01" value="1">
+<div class="opacity-block">
+<label>Transparency:</label>
+<input id="opacitySlider" type="range" min="0.05" max="1" step="0.05" value="1">
+</div>
 
 <div id="threeContainer"></div>
 
-</div>
+</section>
 
+
+
+<!-- ================= MODE SWITCH SCRIPT ================= -->
+
+<script>
+
+const mode2DBtn = document.getElementById("mode2DBtn");
+const mode3DBtn = document.getElementById("mode3DBtn");
+const engine2D = document.getElementById("engine2DSection");
+const engine3D = document.getElementById("engine3DSection");
+
+mode2DBtn.onclick = () => {
+  engine2D.classList.remove("hidden");
+  engine3D.classList.add("hidden");
+};
+
+mode3DBtn.onclick = () => {
+  engine3D.classList.remove("hidden");
+  engine2D.classList.add("hidden");
+};
+
+</script>
+
+
+<!-- THREE.JS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
-<script src="js/engine2d.js"></script>
-<script src="js/engine3d.js"></script>
-
-<script>
-// Mode Switching (pure UI control)
-const btn2D = document.getElementById("btn2D");
-const btn3D = document.getElementById("btn3D");
-const section2D = document.getElementById("section2D");
-const section3D = document.getElementById("section3D");
-
-btn2D.onclick = () => {
-section2D.classList.remove("hidden");
-section3D.classList.add("hidden");
-};
-
-btn3D.onclick = () => {
-section3D.classList.remove("hidden");
-section2D.classList.add("hidden");
-};
-</script>
+<script src="engine2d.js"></script>
+<script src="engine3d.js"></script>
 
 </body>
 </html>
