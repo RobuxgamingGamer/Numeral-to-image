@@ -1,690 +1,507 @@
-/* ==========================================================
-   NUMERAL VOXEL ENGINE — 3D SYSTEM
-   PART 1/3
-   Core + Cube Mode
-========================================================== */
+// ===============================================================
+// Numeral Voxel Engine - GOLD BUILD
+// engine3d.js
+// REAL ARCHITECTURE VERSION (No Fluff)
+// ===============================================================
 
+'use strict';
 
-/* ============================
-   DOM REFERENCES
-============================ */
+// ===============================================================
+// ENGINE CONSTANTS
+// ===============================================================
 
-const size3DInput = document.getElementById("size3D");
-const format3DSelect = document.getElementById("format3D");
-
-const cubeModeBtn = document.getElementById("cubeModeBtn");
-const facesModeBtn = document.getElementById("facesModeBtn");
-
-const stress3DBtn = document.getElementById("stress3DBtn");
-const convert3DBtn = document.getElementById("convert3DBtn");
-
-const input3D = document.getElementById("input3D");
-
-const cubeInputBlock = document.getElementById("cubeInputBlock");
-const facesInputBlock = document.getElementById("facesInputBlock");
-
-const error3D = document.getElementById("error3D");
-const stats3D = document.getElementById("stats3D");
-
-const opacitySlider = document.getElementById("opacitySlider");
-const threeContainer = document.getElementById("threeContainer");
-
-
-/* ============================
-   CONSTANTS
-============================ */
-
-const MAX_SOLID = 10;
-
-
-/* ============================
-   STATE
-============================ */
-
-const state3D = {
-    mode: "cube",
-    format: "binary",
-    size: { x:2, y:2, z:2 }
+const ENGINE3D_CONSTANTS = {
+    MAX_CUBE: 10,
+    MAX_FACES: 25,
+    DEFAULT_SIZE: { x: 2, y: 2, z: 2 },
+    CLEAR_COLOR: 0x000000
 };
 
+// ===============================================================
+// FORMAT VALIDATION + PARSING LAYER
+// ===============================================================
 
-/* ============================
-   THREE SETUP
-============================ */
+const FormatParser3D = {
 
-let scene, camera, renderer, controls;
-let voxelGroup = new THREE.Group();
+    validateBinary(v) { return /^[01]{8}$/.test(v); },
+    validateDecimal(v) {
+        const n = Number(v);
+        return Number.isInteger(n) && n >= 0 && n <= 255;
+    },
+    validateHex(v) { return /^[0-9a-fA-F]{1,2}$/.test(v); },
+    validateOctal(v) {
+        if (!/^[0-7]{1,3}$/.test(v)) return false;
+        return parseInt(v, 8) <= 255;
+    },
+    validateMorse(v) { return /^[\.-]{8}$/.test(v); },
+    validateColorCode(v) { return /^#([0-9a-fA-F]{6})$/.test(v); },
 
-init3D();
+    parseByte(token, format) {
 
-function init3D(){
+        switch (format) {
 
-    scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x000000);
+            case "binary":
+                if (!this.validateBinary(token)) return null;
+                return parseInt(token, 2);
 
-    camera = new THREE.PerspectiveCamera(
-        70,
-        threeContainer.clientWidth / threeContainer.clientHeight,
-        0.1,
-        1000
-    );
+            case "decimal":
+                if (!this.validateDecimal(token)) return null;
+                return parseInt(token, 10);
 
-    camera.position.set(6,6,6);
+            case "hex":
+                if (!this.validateHex(token)) return null;
+                return parseInt(token, 16);
 
-    renderer = new THREE.WebGLRenderer({ antialias:true });
-    renderer.setSize(
-        threeContainer.clientWidth,
-        threeContainer.clientHeight
-    );
+            case "octal":
+                if (!this.validateOctal(token)) return null;
+                return parseInt(token, 8);
 
-    threeContainer.appendChild(renderer.domElement);
+            case "morse":
+                if (!this.validateMorse(token)) return null;
+                const bin = token.replace(/-/g, "1").replace(/\./g, "0");
+                return parseInt(bin, 2);
 
-    controls = new THREE.OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
+            default:
+                return null;
+        }
+    },
 
-    const ambient = new THREE.AmbientLight(0xffffff, 0.8);
-    scene.add(ambient);
-
-    const light = new THREE.DirectionalLight(0xffffff, 0.7);
-    light.position.set(5,10,7);
-    scene.add(light);
-
-    scene.add(voxelGroup);
-
-    animate();
-}
-
-function animate(){
-    requestAnimationFrame(animate);
-    controls.update();
-    renderer.render(scene, camera);
-}
-
-
-/* ============================
-   MODE SWITCHING
-============================ */
-
-cubeModeBtn.onclick = () => {
-    state3D.mode = "cube";
-    cubeModeBtn.classList.add("active");
-    facesModeBtn.classList.remove("active");
-    cubeInputBlock.classList.remove("hidden");
-    facesInputBlock.classList.add("hidden");
+    parseColorCode(token) {
+        if (!this.validateColorCode(token)) return null;
+        return Utils.hexToRgb(token);
+    }
 };
 
-facesModeBtn.onclick = () => {
-    state3D.mode = "faces";
-    facesModeBtn.classList.add("active");
-    cubeModeBtn.classList.remove("active");
-    facesInputBlock.classList.remove("hidden");
-    cubeInputBlock.classList.add("hidden");
-};
+// ===============================================================
+// STRESS GENERATOR (REAL IMPLEMENTATION)
+// ===============================================================
 
-format3DSelect.onchange = () => {
-    state3D.format = format3DSelect.value;
-};
+const StressGenerator3D = {
 
+    randomByte() {
+        return Math.floor(Math.random() * 256);
+    },
 
-/* ============================
-   SIZE PARSER
-============================ */
+    generate(format, pixelCount) {
 
-function parseSize(){
+        const output = [];
 
-    const raw = size3DInput.value.trim();
-    const parts = raw.split("-");
+        for (let i = 0; i < pixelCount; i++) {
 
-    if(parts.length !== 3){
-        return showError("Size must be X-Y-Z.");
-    }
-
-    const x = parseInt(parts[0]);
-    const y = parseInt(parts[1]);
-    const z = parseInt(parts[2]);
-
-    if(!x || !y || !z){
-        return showError("Invalid size.");
-    }
-
-    if(x>MAX_SOLID || y>MAX_SOLID || z>MAX_SOLID){
-        return showError("Cube mode max 10-10-10.");
-    }
-
-    state3D.size = { x,y,z };
-    return true;
-}
-
-
-/* ============================
-   FORMAT PARSER
-============================ */
-
-function parseByte(token){
-
-    switch(state3D.format){
-
-        case "binary":
-            if(!/^[01]{8}$/.test(token)) return null;
-            return parseInt(token,2);
-
-        case "decimal":
-            if(!/^\d+$/.test(token)) return null;
-            return parseInt(token,10);
-
-        case "hex":
-            if(!/^[0-9a-fA-F]{1,2}$/.test(token)) return null;
-            return parseInt(token,16);
-
-        case "octal":
-            if(!/^[0-7]{1,3}$/.test(token)) return null;
-            return parseInt(token,8);
-
-        case "morse":
-            if(!/^[\.\-]{8}$/.test(token)) return null;
-            const bin = token.replace(/-/g,"1").replace(/\./g,"0");
-            return parseInt(bin,2);
-
-        default:
-            return null;
-    }
-}
-
-
-/* ============================
-   SCENE MANAGEMENT
-============================ */
-
-function clearScene(){
-
-    while(voxelGroup.children.length){
-        const obj = voxelGroup.children[0];
-        obj.geometry.dispose();
-        obj.material.dispose();
-        voxelGroup.remove(obj);
-    }
-}
-
-function createVoxel(x,y,z,color){
-
-    const geometry = new THREE.BoxGeometry(1,1,1);
-
-    const material = new THREE.MeshStandardMaterial({
-        color: color,
-        transparent:true,
-        opacity: parseFloat(opacitySlider.value)
-    });
-
-    const cube = new THREE.Mesh(geometry,material);
-
-    cube.position.set(
-        x - state3D.size.x/2 + 0.5,
-        y - state3D.size.y/2 + 0.5,
-        z - state3D.size.z/2 + 0.5
-    );
-
-    voxelGroup.add(cube);
-}
-
-
-/* ============================
-   CONVERT (CUBE MODE)
-============================ */
-
-convert3DBtn.onclick = () => {
-
-    clearError();
-    clearStats();
-
-    if(state3D.mode !== "cube"){
-        return; // Faces handled in Part 2
-    }
-
-    if(!parseSize()) return;
-
-    const {x,y,z} = state3D.size;
-
-    const tokens = input3D.value.trim().split(/\s+/);
-
-    const expected = (state3D.format==="colorcode")
-        ? x*y*z
-        : x*y*z*3;
-
-    if(tokens.length !== expected){
-        return showError("Incorrect number of values.");
-    }
-
-    const start = performance.now();
-    clearScene();
-
-    let t=0;
-
-    for(let i=0;i<x;i++){
-        for(let j=0;j<y;j++){
-            for(let k=0;k<z;k++){
-
-                let r,g,b;
-
-                if(state3D.format==="colorcode"){
-
-                    const hex = tokens[t++].replace("#","");
-                    r = parseInt(hex.substring(0,2),16);
-                    g = parseInt(hex.substring(2,4),16);
-                    b = parseInt(hex.substring(4,6),16);
-
-                }else{
-
-                    r = parseByte(tokens[t++]);
-                    g = parseByte(tokens[t++]);
-                    b = parseByte(tokens[t++]);
-
-                    if(r===null||g===null||b===null){
-                        return showError("Invalid value.");
-                    }
+            if (format === "colorcode") {
+                const r = this.randomByte();
+                const g = this.randomByte();
+                const b = this.randomByte();
+                output.push(Utils.rgbToHex(r, g, b));
+            } else {
+                for (let c = 0; c < 3; c++) {
+                    const byte = this.randomByte();
+                    output.push(this.encodeByte(byte, format));
                 }
-
-                createVoxel(i,j,k,new THREE.Color(r/255,g/255,b/255));
             }
         }
-    }
 
-    const end = performance.now();
-    const time = end-start;
-    const fps = 1000/time;
+        return output.join(" ");
+    },
 
-    stats3D.textContent =
-        "Render Time: " + time.toFixed(2) +
-        " ms | FPS: " + fps.toFixed(2);
-};
+    encodeByte(byte, format) {
 
-
-/* ============================
-   TRANSPARENCY
-============================ */
-
-opacitySlider.oninput = () => {
-
-    voxelGroup.traverse(obj=>{
-        if(obj.isMesh){
-            obj.material.opacity = parseFloat(opacitySlider.value);
+        switch (format) {
+            case "binary": return byte.toString(2).padStart(8, "0");
+            case "decimal": return byte.toString(10);
+            case "hex": return byte.toString(16).toUpperCase();
+            case "octal": return byte.toString(8);
+            case "morse":
+                return byte.toString(2)
+                    .padStart(8, "0")
+                    .replace(/1/g, "-")
+                    .replace(/0/g, ".");
+            default:
+                return "";
         }
-    });
+    }
 };
 
+// ===============================================================
+// VOXEL FACTORY (NO DUPLICATE MATERIAL LEAKS)
+// ===============================================================
 
-/* ============================
-   ERROR + STATS
-============================ */
+class VoxelFactory {
 
-function showError(msg){
-    error3D.textContent = msg;
-}
-
-function clearError(){
-    error3D.textContent = "";
-}
-
-function clearStats(){
-    stats3D.textContent = "";
-}
-/* ==========================================================
-   PART 2/3 — FACES MODE (HOLLOW CUBE)
-========================================================== */
-
-const MAX_FACES = 25;
-
-const faceFront  = document.getElementById("faceFront");
-const faceBack   = document.getElementById("faceBack");
-const faceLeft   = document.getElementById("faceLeft");
-const faceRight  = document.getElementById("faceRight");
-const faceTop    = document.getElementById("faceTop");
-const faceBottom = document.getElementById("faceBottom");
-
-
-/* ============================
-   EXTENDED SIZE PARSER
-============================ */
-
-function parseSizeFaces(){
-
-    const raw = size3DInput.value.trim();
-    const parts = raw.split("-");
-
-    if(parts.length !== 3){
-        return showError("Size must be X-Y-Z.");
+    constructor(scene) {
+        this.scene = scene;
+        this.group = new THREE.Group();
+        this.scene.add(this.group);
+        this.materialCache = new Map();
     }
 
-    const x = parseInt(parts[0]);
-    const y = parseInt(parts[1]);
-    const z = parseInt(parts[2]);
-
-    if(!x || !y || !z){
-        return showError("Invalid size.");
+    clear() {
+        while (this.group.children.length) {
+            const obj = this.group.children[0];
+            obj.geometry.dispose();
+            obj.material.dispose();
+            this.group.remove(obj);
+        }
+        this.materialCache.clear();
     }
 
-    if(x>MAX_FACES || y>MAX_FACES || z>MAX_FACES){
-        return showError("Faces mode max 25-25-25.");
+    createMaterial(color, opacity) {
+
+        const key = color.getHex() + "_" + opacity;
+
+        if (this.materialCache.has(key)) {
+            return this.materialCache.get(key);
+        }
+
+        const material = new THREE.MeshStandardMaterial({
+            color: color,
+            transparent: opacity < 1,
+            opacity: opacity
+        });
+
+        this.materialCache.set(key, material);
+        return material;
     }
 
-    state3D.size = { x,y,z };
-    return true;
-}
+    createVoxel(x, y, z, size, color, opacity) {
 
+        const geometry = new THREE.BoxGeometry(1, 1, 1);
+        const material = this.createMaterial(color, opacity);
 
-/* ============================
-   FACE TOKEN PARSER
-============================ */
+        const mesh = new THREE.Mesh(geometry, material);
 
-function parseFaceTokens(text, expectedCount){
-
-    const tokens = text.trim().split(/\s+/);
-
-    if(tokens.length !== expectedCount){
-        return null;
-    }
-
-    return tokens;
-}
-
-
-/* ============================
-   FACE COLOR PARSER
-============================ */
-
-function parseColorFromTokens(tokens, index){
-
-    if(state3D.format === "colorcode"){
-
-        const hex = tokens[index].replace("#","");
-        return new THREE.Color(
-            parseInt(hex.substring(0,2),16)/255,
-            parseInt(hex.substring(2,4),16)/255,
-            parseInt(hex.substring(4,6),16)/255
+        mesh.position.set(
+            x - size.x / 2 + 0.5,
+            y - size.y / 2 + 0.5,
+            z - size.z / 2 + 0.5
         );
 
-    }else{
-
-        const r = parseByte(tokens[index]);
-        const g = parseByte(tokens[index+1]);
-        const b = parseByte(tokens[index+2]);
-
-        if(r===null || g===null || b===null){
-            return null;
-        }
-
-        return new THREE.Color(r/255,g/255,b/255);
+        this.group.add(mesh);
     }
 }
 
+// ===============================================================
+// CUBE BUILDER (SOLID)
+// ===============================================================
 
-/* ============================
-   FACES MODE CONVERT EXTENSION
-============================ */
+const CubeBuilder = {
 
-const originalConvert = convert3DBtn.onclick;
+    build(factory, size, tokens, format, opacity) {
 
-convert3DBtn.onclick = () => {
+        let t = 0;
+        const multiplier = format === "colorcode" ? 1 : 3;
 
-    if(state3D.mode === "cube"){
-        originalConvert();
-        return;
-    }
+        for (let x = 0; x < size.x; x++) {
+            for (let y = 0; y < size.y; y++) {
+                for (let z = 0; z < size.z; z++) {
 
-    clearError();
-    clearStats();
+                    let r, g, b;
 
-    if(!parseSizeFaces()) return;
+                    if (format === "colorcode") {
 
-    const {x,y,z} = state3D.size;
+                        const rgb = FormatParser3D.parseColorCode(tokens[t++]);
+                        if (!rgb) return false;
 
-    clearScene();
+                        r = rgb.r;
+                        g = rgb.g;
+                        b = rgb.b;
 
-    const start = performance.now();
+                    } else {
 
-    const frontCount  = x*y;
-    const backCount   = x*y;
-    const leftCount   = z*y;
-    const rightCount  = z*y;
-    const topCount    = x*z;
-    const bottomCount = x*z;
+                        r = FormatParser3D.parseByte(tokens[t++], format);
+                        g = FormatParser3D.parseByte(tokens[t++], format);
+                        b = FormatParser3D.parseByte(tokens[t++], format);
 
-    const multiplier = (state3D.format==="colorcode") ? 1 : 3;
+                        if (r === null || g === null || b === null) return false;
+                    }
 
-    const frontTokens  = parseFaceTokens(faceFront.value,  frontCount*multiplier);
-    const backTokens   = parseFaceTokens(faceBack.value,   backCount*multiplier);
-    const leftTokens   = parseFaceTokens(faceLeft.value,   leftCount*multiplier);
-    const rightTokens  = parseFaceTokens(faceRight.value,  rightCount*multiplier);
-    const topTokens    = parseFaceTokens(faceTop.value,    topCount*multiplier);
-    const bottomTokens = parseFaceTokens(faceBottom.value, bottomCount*multiplier);
-
-    if(!frontTokens || !backTokens || !leftTokens ||
-       !rightTokens || !topTokens || !bottomTokens){
-        return showError("Incorrect face input count.");
-    }
-
-    /* ================= FRONT ================= */
-    let t=0;
-    for(let i=0;i<x;i++){
-        for(let j=0;j<y;j++){
-
-            const index = t;
-            const color = parseColorFromTokens(frontTokens, index);
-            if(!color) return showError("Invalid value.");
-
-            createVoxel(i,j,z-1,color);
-            t += multiplier;
+                    const color = new THREE.Color(r / 255, g / 255, b / 255);
+                    factory.createVoxel(x, y, z, size, color, opacity);
+                }
+            }
         }
+
+        return true;
     }
-
-    /* ================= BACK ================= */
-    t=0;
-    for(let i=0;i<x;i++){
-        for(let j=0;j<y;j++){
-
-            const index = t;
-            const color = parseColorFromTokens(backTokens, index);
-            if(!color) return showError("Invalid value.");
-
-            createVoxel(i,j,0,color);
-            t += multiplier;
-        }
-    }
-
-    /* ================= LEFT ================= */
-    t=0;
-    for(let k=0;k<z;k++){
-        for(let j=0;j<y;j++){
-
-            const index = t;
-            const color = parseColorFromTokens(leftTokens, index);
-            if(!color) return showError("Invalid value.");
-
-            createVoxel(0,j,k,color);
-            t += multiplier;
-        }
-    }
-
-    /* ================= RIGHT ================= */
-    t=0;
-    for(let k=0;k<z;k++){
-        for(let j=0;j<y;j++){
-
-            const index = t;
-            const color = parseColorFromTokens(rightTokens, index);
-            if(!color) return showError("Invalid value.");
-
-            createVoxel(x-1,j,k,color);
-            t += multiplier;
-        }
-    }
-
-    /* ================= TOP ================= */
-    t=0;
-    for(let i=0;i<x;i++){
-        for(let k=0;k<z;k++){
-
-            const index = t;
-            const color = parseColorFromTokens(topTokens, index);
-            if(!color) return showError("Invalid value.");
-
-            createVoxel(i,y-1,k,color);
-            t += multiplier;
-        }
-    }
-
-    /* ================= BOTTOM ================= */
-    t=0;
-    for(let i=0;i<x;i++){
-        for(let k=0;k<z;k++){
-
-            const index = t;
-            const color = parseColorFromTokens(bottomTokens, index);
-            if(!color) return showError("Invalid value.");
-
-            createVoxel(i,0,k,color);
-            t += multiplier;
-        }
-    }
-
-    const end = performance.now();
-    const time = end-start;
-    const fps = 1000/time;
-
-    stats3D.textContent =
-        "Render Time: " + time.toFixed(2) +
-        " ms | FPS: " + fps.toFixed(2);
 };
-/* ==========================================================
-   PART 3/3 — UNIVERSAL STRESS GENERATOR
-   Works for Cube + Faces
-   Works for ALL formats
-========================================================== */
 
+// ===============================================================
+// FACES BUILDER (HOLLOW SURFACE ONLY)
+// ===============================================================
 
-/* ============================
-   RANDOM BYTE
-============================ */
+const FacesBuilder = {
 
-function randomByte(){
-    return Math.floor(Math.random()*256);
-}
+    build(factory, size, faceInputs, format, opacity) {
 
+        const faceDefinitions = [
+            { name: "front",  getPos: (i, j) => ({ x: i, y: j, z: size.z - 1 }), width: size.x, height: size.y },
+            { name: "back",   getPos: (i, j) => ({ x: i, y: j, z: 0 }), width: size.x, height: size.y },
+            { name: "left",   getPos: (i, j) => ({ x: 0, y: j, z: i }), width: size.z, height: size.y },
+            { name: "right",  getPos: (i, j) => ({ x: size.x - 1, y: j, z: i }), width: size.z, height: size.y },
+            { name: "top",    getPos: (i, j) => ({ x: i, y: size.y - 1, z: j }), width: size.x, height: size.z },
+            { name: "bottom", getPos: (i, j) => ({ x: i, y: 0, z: j }), width: size.x, height: size.z }
+        ];
 
-/* ============================
-   FORMAT ENCODER
-============================ */
+        for (const face of faceDefinitions) {
 
-function encodeValue(byte){
+            const tokens = faceInputs[face.name];
+            const multiplier = format === "colorcode" ? 1 : 3;
+            const expected = face.width * face.height * multiplier;
 
-    switch(state3D.format){
+            if (tokens.length !== expected) return false;
 
-        case "binary":
-            return byte.toString(2).padStart(8,"0");
+            let t = 0;
 
-        case "decimal":
-            return byte.toString(10);
+            for (let i = 0; i < face.width; i++) {
+                for (let j = 0; j < face.height; j++) {
 
-        case "hex":
-            return byte.toString(16).toUpperCase();
+                    let r, g, b;
 
-        case "octal":
-            return byte.toString(8);
+                    if (format === "colorcode") {
 
-        case "morse":
-            const bin = byte.toString(2).padStart(8,"0");
-            return bin.replace(/1/g,"-").replace(/0/g,".");
+                        const rgb = FormatParser3D.parseColorCode(tokens[t++]);
+                        if (!rgb) return false;
 
-        case "colorcode":
-            return null;
+                        r = rgb.r;
+                        g = rgb.g;
+                        b = rgb.b;
 
-        default:
-            return null;
+                    } else {
+
+                        r = FormatParser3D.parseByte(tokens[t++], format);
+                        g = FormatParser3D.parseByte(tokens[t++], format);
+                        b = FormatParser3D.parseByte(tokens[t++], format);
+
+                        if (r === null || g === null || b === null) return false;
+                    }
+
+                    const pos = face.getPos(i, j);
+                    const color = new THREE.Color(r / 255, g / 255, b / 255);
+                    factory.createVoxel(pos.x, pos.y, pos.z, size, color, opacity);
+                }
+            }
+        }
+
+        return true;
     }
-}
+};
 
+// ===============================================================
+// MAIN ENGINE CLASS
+// ===============================================================
 
-/* ============================
-   GENERATE COLORCODE
-============================ */
+class Engine3D {
 
-function generateColorCode(){
+    constructor() {
 
-    const r = randomByte().toString(16).padStart(2,"0");
-    const g = randomByte().toString(16).padStart(2,"0");
-    const b = randomByte().toString(16).padStart(2,"0");
+        this.scene = new THREE.Scene();
+        this.scene.background = new THREE.Color(ENGINE3D_CONSTANTS.CLEAR_COLOR);
 
-    return "#" + r + g + b;
-}
+        this.container = document.getElementById("threeContainer");
 
+        this.camera = new THREE.PerspectiveCamera(
+            70,
+            this.container.clientWidth / this.container.clientHeight,
+            0.1,
+            1000
+        );
 
-/* ============================
-   GENERATE TOKEN BLOCK
-============================ */
+        this.camera.position.set(6, 6, 6);
 
-function generateTokenBlock(pixelCount){
+        this.renderer = new THREE.WebGLRenderer({ antialias: true });
+        this.renderer.setSize(
+            this.container.clientWidth,
+            this.container.clientHeight
+        );
 
-    const tokens = [];
-    const multiplier = (state3D.format==="colorcode") ? 1 : 3;
+        this.container.appendChild(this.renderer.domElement);
 
-    for(let i=0;i<pixelCount;i++){
+        const ambient = new THREE.AmbientLight(0xffffff, 0.8);
+        this.scene.add(ambient);
 
-        if(state3D.format==="colorcode"){
+        const dir = new THREE.DirectionalLight(0xffffff, 0.6);
+        dir.position.set(5, 10, 7);
+        this.scene.add(dir);
 
-            tokens.push(generateColorCode());
+        this.factory = new VoxelFactory(this.scene);
 
-        }else{
+        this.size = ENGINE3D_CONSTANTS.DEFAULT_SIZE;
+        this.format = "binary";
+        this.mode = "cube";
 
-            for(let c=0;c<3;c++){
-                const byte = randomByte();
-                tokens.push(encodeValue(byte));
+        this.opacity = 1;
+
+        this.bindUI();
+        this.animate();
+        this.handleResize();
+    }
+
+    bindUI() {
+
+        document.getElementById("format3D")
+            .addEventListener("change", e => this.format = e.target.value);
+
+        document.getElementById("editCubeBtn")
+            .addEventListener("click", () => this.mode = "cube");
+
+        document.getElementById("editFacesBtn")
+            .addEventListener("click", () => this.mode = "faces");
+
+        document.getElementById("convert3DBtn")
+            .addEventListener("click", () => this.convert());
+
+        document.getElementById("stress3DBtn")
+            .addEventListener("click", () => this.stress());
+
+        document.getElementById("transparency3D")
+            .addEventListener("input", e => {
+                this.opacity = parseFloat(e.target.value);
+                this.updateTransparency();
+            });
+
+        window.addEventListener("resize", () => this.handleResize());
+    }
+
+    handleResize() {
+
+        const width = this.container.clientWidth;
+        const height = this.container.clientHeight;
+
+        this.camera.aspect = width / height;
+        this.camera.updateProjectionMatrix();
+
+        this.renderer.setSize(width, height);
+    }
+
+    parseSize() {
+
+        const raw = document.getElementById("size3D").value.trim();
+        const parts = raw.split("-");
+
+        if (parts.length !== 3) return false;
+
+        const x = parseInt(parts[0]);
+        const y = parseInt(parts[1]);
+        const z = parseInt(parts[2]);
+
+        if (!x || !y || !z) return false;
+
+        if (this.mode === "cube" &&
+            (x > ENGINE3D_CONSTANTS.MAX_CUBE ||
+             y > ENGINE3D_CONSTANTS.MAX_CUBE ||
+             z > ENGINE3D_CONSTANTS.MAX_CUBE)) return false;
+
+        if (this.mode === "faces" &&
+            (x > ENGINE3D_CONSTANTS.MAX_FACES ||
+             y > ENGINE3D_CONSTANTS.MAX_FACES ||
+             z > ENGINE3D_CONSTANTS.MAX_FACES)) return false;
+
+        this.size = { x, y, z };
+        return true;
+    }
+
+    convert() {
+
+        if (!this.parseSize()) return;
+
+        const start = performance.now();
+
+        this.factory.clear();
+
+        if (this.mode === "cube") {
+
+            const tokens = document.getElementById("input3D")
+                .value.trim().split(/\s+/);
+
+            const multiplier = this.format === "colorcode" ? 1 : 3;
+            const expected = this.size.x * this.size.y * this.size.z * multiplier;
+
+            if (tokens.length !== expected) return;
+
+            const ok = CubeBuilder.build(
+                this.factory,
+                this.size,
+                tokens,
+                this.format,
+                this.opacity
+            );
+
+            if (!ok) return;
+
+        } else {
+
+            const faceInputs = {
+                front: document.getElementById("faceFront").value.trim().split(/\s+/),
+                back: document.getElementById("faceBack").value.trim().split(/\s+/),
+                left: document.getElementById("faceLeft").value.trim().split(/\s+/),
+                right: document.getElementById("faceRight").value.trim().split(/\s+/),
+                top: document.getElementById("faceTop").value.trim().split(/\s+/),
+                bottom: document.getElementById("faceBottom").value.trim().split(/\s+/)
+            };
+
+            const ok = FacesBuilder.build(
+                this.factory,
+                this.size,
+                faceInputs,
+                this.format,
+                this.opacity
+            );
+
+            if (!ok) return;
+        }
+
+        const stats = Utils.calculateStats(start);
+        document.getElementById("ms3D").textContent = stats.ms;
+        document.getElementById("fps3D").textContent = stats.fps;
+    }
+
+    stress() {
+
+        if (!this.parseSize()) return;
+
+        if (this.mode === "cube") {
+
+            const total = this.size.x * this.size.y * this.size.z;
+            document.getElementById("input3D").value =
+                StressGenerator3D.generate(this.format, total);
+
+        } else {
+
+            const faces = {
+                front: this.size.x * this.size.y,
+                back: this.size.x * this.size.y,
+                left: this.size.z * this.size.y,
+                right: this.size.z * this.size.y,
+                top: this.size.x * this.size.z,
+                bottom: this.size.x * this.size.z
+            };
+
+            for (const key in faces) {
+                document.getElementById("face" + key.charAt(0).toUpperCase() + key.slice(1))
+                    .value = StressGenerator3D.generate(this.format, faces[key]);
             }
         }
     }
 
-    return tokens.join(" ");
+    updateTransparency() {
+        this.factory.group.traverse(obj => {
+            if (obj.isMesh) {
+                obj.material.opacity = this.opacity;
+                obj.material.transparent = this.opacity < 1;
+            }
+        });
+    }
+
+    animate() {
+        requestAnimationFrame(() => this.animate());
+        this.renderer.render(this.scene, this.camera);
+    }
 }
 
+// ===============================================================
+// BOOTSTRAP
+// ===============================================================
 
-/* ============================
-   STRESS BUTTON LOGIC
-============================ */
-
-stress3DBtn.onclick = () => {
-
-    clearError();
-    clearStats();
-
-    if(state3D.mode === "cube"){
-
-        if(!parseSize()) return;
-
-        const {x,y,z} = state3D.size;
-        const totalPixels = x*y*z;
-
-        input3D.value = generateTokenBlock(totalPixels);
-        return;
-    }
-
-    if(state3D.mode === "faces"){
-
-        if(!parseSizeFaces()) return;
-
-        const {x,y,z} = state3D.size;
-
-        const frontPixels  = x*y;
-        const backPixels   = x*y;
-        const leftPixels   = z*y;
-        const rightPixels  = z*y;
-        const topPixels    = x*z;
-        const bottomPixels = x*z;
-
-        faceFront.value  = generateTokenBlock(frontPixels);
-        faceBack.value   = generateTokenBlock(backPixels);
-        faceLeft.value   = generateTokenBlock(leftPixels);
-        faceRight.value  = generateTokenBlock(rightPixels);
-        faceTop.value    = generateTokenBlock(topPixels);
-        faceBottom.value = generateTokenBlock(bottomPixels);
-
-        return;
-    }
-};
+document.addEventListener("DOMContentLoaded", () => {
+    new Engine3D();
+});
