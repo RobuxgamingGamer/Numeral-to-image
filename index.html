@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Numeral Engine V7</title>
+<title>Numeral Engine V10</title>
 
 <style>
 body{
@@ -15,16 +15,28 @@ margin:0;
 padding:20px;
 }
 
+h2{margin-bottom:5px;}
+
+.instructions{
+font-size:14px;
+opacity:0.8;
+margin-bottom:20px;
+line-height:1.5em;
+}
+
 button,input,select,textarea{
-font-size:16px;
 background:#000;
 color:#00ff88;
 border:1px solid #00ff88;
 padding:6px 10px;
 margin:5px;
+font-size:15px;
 }
 
-textarea{width:95%;max-width:600px;}
+textarea{
+width:95%;
+max-width:650px;
+}
 
 canvas{
 border:1px solid #00ff88;
@@ -33,7 +45,7 @@ image-rendering:pixelated;
 
 #threeContainer{
 width:100%;
-height:420px;
+height:450px;
 border:1px solid #00ff88;
 margin-top:10px;
 }
@@ -43,14 +55,30 @@ margin-top:10px;
 .stats{
 margin-top:8px;
 font-size:14px;
-opacity:0.8;
+opacity:0.85;
 }
 </style>
 </head>
 
 <body>
 
-<h2>Numeral Engine V7</h2>
+<h2>Numeral Engine V10</h2>
+
+<div class="instructions">
+<b>2D Engine:</b><br>
+• Size format: X-Y (example: 4-4)<br>
+• Binary/Decimal/Hex/Octal/Morse require R G B values per pixel<br>
+• ColorCode requires #RRGGBB per pixel<br>
+• Stress Mode generates correct amount automatically<br><br>
+
+<b>3D Engine:</b><br>
+• Size format: X-Y-Z (example: 3-3-3)<br>
+• Edit Cube → Full solid voxel grid (limit 10-10-10)<br>
+• Edit Faces → Hollow surface only (limit 25-25-25)<br>
+• Stress Mode auto-fills correct surface/volume count<br>
+• Transparency slider affects all voxels<br>
+• Swipe to rotate • Pinch to zoom
+</div>
 
 <button onclick="show2D()">2D Mode</button>
 <button onclick="show3D()">3D Mode</button>
@@ -76,10 +104,10 @@ Format:
 
 <select id="modeSelect">
 <option value="normal">Normal</option>
-<option value="stress">Stress Test Mode</option>
+<option value="stress">Stress</option>
 </select>
 
-<button onclick="generateStress()">Stress</button>
+<button onclick="generateStress()">Generate</button>
 
 <br>
 
@@ -90,9 +118,7 @@ Format:
 <button onclick="renderImage()">Convert</button>
 <button onclick="downloadPNG()">Download PNG</button>
 
-<div class="stats">
-<span id="stats2D"></span>
-</div>
+<div class="stats" id="stats2D"></div>
 
 <br>
 
@@ -124,25 +150,14 @@ Format:
 
 <select id="modeSelect3D">
 <option value="normal">Normal</option>
-<option value="stress">Stress Test Mode</option>
+<option value="stress">Stress</option>
 </select>
 
-<button onclick="generateStress3D()">Stress</button>
+<button onclick="generateStress3D()">Generate</button>
 
 <br>
 
-<div id="cubeEditor">
 <textarea id="inputData3D" rows="4"></textarea>
-</div>
-
-<div id="faceEditor" class="hidden">
-Front: <input id="faceFront"><br>
-Back: <input id="faceBack"><br>
-Left: <input id="faceLeft"><br>
-Right: <input id="faceRight"><br>
-Top: <input id="faceTop"><br>
-Bottom: <input id="faceBottom"><br>
-</div>
 
 <br>
 
@@ -153,9 +168,7 @@ Bottom: <input id="faceBottom"><br>
 Transparency:
 <input type="range" id="opacitySlider" min="0" max="1" step="0.01" value="1">
 
-<div class="stats">
-<span id="stats3D"></span>
-</div>
+<div class="stats" id="stats3D"></div>
 
 <div id="threeContainer"></div>
 
