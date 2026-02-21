@@ -3,133 +3,141 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Numeral Voxel Engine – GOLD BUILD</title>
+<title>Numeral Voxel Engine</title>
 
 <link rel="stylesheet" href="css/style.css">
 
 </head>
 <body>
 
-<div class="wrapper">
+<header>
+    <h1>Numeral Voxel Engine</h1>
 
-<h1>Numeral Voxel Engine – GOLD BUILD</h1>
+    <div class="engine-switch">
+        <button id="switch2D" class="active">2D Engine</button>
+        <button id="switch3D">3D Engine</button>
+    </div>
+</header>
 
-<div class="global-rules">
-<h2>GLOBAL RULES:</h2>
-<ul>
-<li>FPS + ms calculated only during Convert</li>
-<li>Cube mode max 10-10-10 (solid)</li>
-<li>Faces mode max 25-25-25 (hollow)</li>
-<li>2D max 1500-1500</li>
-<li>Binary/Decimal/Hex/Octal/Morse = 3 values per pixel</li>
-<li>ColorCode = 1 value per pixel (#RRGGBB)</li>
-</ul>
-</div>
+<!-- ========================================================= -->
+<!-- 2D SECTION -->
+<!-- ========================================================= -->
 
-<div class="mode-switch">
-<button id="mode2DBtn">2D Mode</button>
-<button id="mode3DBtn">3D Mode</button>
-</div>
+<section id="section2D">
 
-<!-- ========================= -->
-<!-- 2D ENGINE -->
-<!-- ========================= -->
+    <h2>2D Image Renderer</h2>
 
-<section id="engine2D" class="engine-section active">
+    <div class="controls">
+        <label>Size (X-Y)</label>
+        <input id="size2D" value="4-4">
 
-<h2>2D Engine</h2>
+        <label>Format</label>
+        <select id="format2D">
+            <option value="binary">Binary</option>
+            <option value="decimal">Decimal</option>
+            <option value="hex">Hex</option>
+            <option value="octal">Octal</option>
+            <option value="morse">Morse</option>
+            <option value="colorcode">Color Code</option>
+        </select>
 
-<label>Size (X-Y):</label>
-<input type="text" id="size2D" value="2-2">
+        <button id="convert2DBtn">Convert</button>
+        <button id="stress2DBtn">Stress Test Mode</button>
+    </div>
 
-<label>Format:</label>
-<select id="format2D">
-<option value="binary">Binary</option>
-<option value="decimal">Decimal</option>
-<option value="hex">Hex</option>
-<option value="octal">Octal</option>
-<option value="morse">Morse</option>
-<option value="colorcode">ColorCode</option>
-</select>
+    <div id="warning2D" class="warning"></div>
 
-<div class="button-row">
-<button id="stress2DBtn">Stress Test Mode</button>
-<button id="convert2DBtn">Convert</button>
-</div>
+    <textarea id="input2D" placeholder="Enter values separated by spaces..."></textarea>
 
-<div class="stats">
-Render Time: <span id="ms2D">0</span> ms |
-FPS: <span id="fps2D">0</span>
-</div>
+    <div class="stats">
+        <span id="ms2D">0 ms</span>
+        <span id="fps2D">0</span>
+    </div>
 
-<textarea id="input2D" rows="6"></textarea>
-
-<div class="engine-frame">
-<canvas id="canvas2D"></canvas>
-</div>
+    <canvas id="canvas2D"></canvas>
 
 </section>
 
+<!-- ========================================================= -->
+<!-- 3D SECTION -->
+<!-- ========================================================= -->
 
-<!-- ========================= -->
-<!-- 3D ENGINE -->
-<!-- ========================= -->
+<section id="section3D" style="display:none;">
 
-<section id="engine3D" class="engine-section">
+    <h2>3D Voxel Engine</h2>
 
-<h2>3D Engine</h2>
+    <div class="controls">
+        <label>Size (X-Y-Z)</label>
+        <input id="size3D" value="2-2-2">
 
-<label>Size (X-Y-Z):</label>
-<input type="text" id="size3D" value="2-2-2">
+        <label>Format</label>
+        <select id="format3D">
+            <option value="binary">Binary</option>
+            <option value="decimal">Decimal</option>
+            <option value="hex">Hex</option>
+            <option value="octal">Octal</option>
+            <option value="morse">Morse</option>
+            <option value="colorcode">Color Code</option>
+        </select>
 
-<label>Format:</label>
-<select id="format3D">
-<option value="binary">Binary</option>
-<option value="decimal">Decimal</option>
-<option value="hex">Hex</option>
-<option value="octal">Octal</option>
-<option value="morse">Morse</option>
-<option value="colorcode">ColorCode</option>
-</select>
+        <label>Transparency</label>
+        <input id="transparency3D" type="range" min="0" max="1" step="0.05" value="1">
+    </div>
 
-<div class="button-row">
-<button id="editCubeBtn">Edit Cube</button>
-<button id="editFacesBtn">Edit Faces</button>
-</div>
+    <div class="mode-switch">
+        <button id="editCubeBtn" class="active">Edit Cube</button>
+        <button id="editFacesBtn">Edit All 6 Faces</button>
+    </div>
 
-<div id="facesInputs" class="faces-container hidden">
-<label>Front:</label><textarea id="faceFront"></textarea>
-<label>Back:</label><textarea id="faceBack"></textarea>
-<label>Left:</label><textarea id="faceLeft"></textarea>
-<label>Right:</label><textarea id="faceRight"></textarea>
-<label>Top:</label><textarea id="faceTop"></textarea>
-<label>Bottom:</label><textarea id="faceBottom"></textarea>
-</div>
+    <!-- Cube Panel -->
+    <div id="cubePanel">
+        <textarea id="input3D" placeholder="Enter voxel data..."></textarea>
+    </div>
 
-<div class="button-row">
-<button id="stress3DBtn">Stress Test Mode</button>
-<button id="convert3DBtn">Convert</button>
-</div>
+    <!-- Faces Panel -->
+    <div id="facesPanel" style="display:none;">
 
-<div class="stats">
-Render Time: <span id="ms3D">0</span> ms |
-FPS: <span id="fps3D">0</span>
-</div>
+        <h3>Front</h3>
+        <textarea id="faceFront"></textarea>
 
-<textarea id="input3D" rows="6"></textarea>
+        <h3>Back</h3>
+        <textarea id="faceBack"></textarea>
 
-<label>Transparency:</label>
-<input type="range" id="transparency3D" min="0" max="1" step="0.01" value="1">
+        <h3>Left</h3>
+        <textarea id="faceLeft"></textarea>
 
-<div class="engine-frame">
-<div id="threeContainer"></div>
-</div>
+        <h3>Right</h3>
+        <textarea id="faceRight"></textarea>
+
+        <h3>Top</h3>
+        <textarea id="faceTop"></textarea>
+
+        <h3>Bottom</h3>
+        <textarea id="faceBottom"></textarea>
+
+    </div>
+
+    <div class="controls">
+        <button id="convert3DBtn">Convert</button>
+        <button id="stress3DBtn">Stress Test Mode</button>
+    </div>
+
+    <div id="warning3D" class="warning"></div>
+
+    <div class="stats">
+        <span id="ms3D">0 ms</span>
+        <span id="fps3D">0</span>
+    </div>
+
+    <div id="threeContainer"></div>
 
 </section>
 
-</div>
+<!-- ========================================================= -->
+<!-- SCRIPTS -->
+<!-- ========================================================= -->
 
-<script src="libs/three.min.js"></script>
+<script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
 <script src="js/utils.js"></script>
 <script src="js/engine2d.js"></script>
 <script src="js/engine3d.js"></script>
