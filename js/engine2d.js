@@ -1,149 +1,55 @@
-const canvas2D = document.getElementById("canvas2D");
-
-function getContextSafe() {
-    return canvas2D.getContext("2d", { willReadFrequently: true });
-}
-
-function parseValue(value, format){
-
-    if(format==="binary"){
-        if(!/^[01]{8}$/.test(value)) return null;
-        return parseInt(value,2);
-    }
-
-    if(format==="decimal"){
-        let n=parseInt(value,10);
-        return (n>=0 && n<=255)?n:null;
-    }
-
-    if(format==="hex"){
-        if(!/^[0-9a-fA-F]{1,2}$/.test(value)) return null;
-        return parseInt(value,16);
-    }
-
-    if(format==="octal"){
-        if(!/^[0-7]{1,3}$/.test(value)) return null;
-        let n=parseInt(value,8);
-        return (n<=255)?n:null;
-    }
-
-    if(format==="morse"){
-        if(!/^[\.\-]{8}$/.test(value)) return null;
-        let b=value.replace(/-/g,"1").replace(/\./g,"0");
-        return parseInt(b,2);
-    }
-
-    return null;
-}
-
-function generateStress(){
-
-    if(document.getElementById("modeSelect").value!=="stress") return;
-
-    let size=document.getElementById("size").value.split("-");
-    let w=parseInt(size[0]);
-    let h=parseInt(size[1]);
-    let format=document.getElementById("format").value;
-
-    let total=w*h;
-    let output=[];
-
-    for(let i=0;i<total;i++){
-
-        if(format==="colorcode"){
-            let r=Math.floor(Math.random()*256).toString(16).padStart(2,"0");
-            let g=Math.floor(Math.random()*256).toString(16).padStart(2,"0");
-            let b=Math.floor(Math.random()*256).toString(16).padStart(2,"0");
-            output.push("#"+r+g+b);
-        } else {
-            for(let j=0;j<3;j++){
-                let val=Math.floor(Math.random()*256);
-
-                if(format==="binary") output.push(val.toString(2).padStart(8,"0"));
-                if(format==="decimal") output.push(val);
-                if(format==="hex") output.push(val.toString(16).padStart(2,"0"));
-                if(format==="octal") output.push(val.toString(8));
-                if(format==="morse"){
-                    let bin=val.toString(2).padStart(8,"0");
-                    output.push(bin.replace(/1/g,"-").replace(/0/g,"."));
-                }
-            }
-        }
-    }
-
-    document.getElementById("inputData").value=output.join(" ");
-}
+const canvas2D=document.getElementById("canvas2D");
+const ctx=canvas2D.getContext("2d");
 
 function renderImage(){
 
-    let size=document.getElementById("size").value.split("-");
-    let w=parseInt(size[0]);
-    let h=parseInt(size[1]);
+let start=performance.now();
 
-    if(!w || !h) return;
+let size=document.getElementById("size").value.split("-");
+let w=parseInt(size[0]);
+let h=parseInt(size[1]);
 
-    canvas2D.width = w;
-    canvas2D.height = h;
+canvas2D.width=w;
+canvas2D.height=h;
 
-    const ctx = getContextSafe();
-    const imgData = ctx.createImageData(w,h);
+let imgData=ctx.createImageData(w,h);
+let values=document.getElementById("inputData")
+.value.trim().split(/\s+/);
 
-    let format=document.getElementById("format").value;
-    let values=document.getElementById("inputData").value.trim().split(/\s+/);
+let format=document.getElementById("format").value;
 
-    if(format==="colorcode"){
+if(values.length < w*h*3 && format!=="colorcode") return;
 
-        if(values.length !== w*h){
-            alert("ColorCode requires exactly X*Y values.");
-            return;
-        }
+for(let i=0;i<w*h;i++){
 
-        for(let i=0;i<w*h;i++){
-            let hex=values[i].replace("#","");
-            let r=parseInt(hex.substring(0,2),16);
-            let g=parseInt(hex.substring(2,4),16);
-            let b=parseInt(hex.substring(4,6),16);
+let r,g,b;
 
-            imgData.data[i*4]=r;
-            imgData.data[i*4+1]=g;
-            imgData.data[i*4+2]=b;
-            imgData.data[i*4+3]=255;
-        }
-
-    } else {
-
-        if(values.length !== w*h*3){
-            alert("Numeric formats require X*Y*3 values.");
-            return;
-        }
-
-        for(let i=0;i<w*h;i++){
-
-            let r=parseValue(values[i*3],format);
-            let g=parseValue(values[i*3+1],format);
-            let b=parseValue(values[i*3+2],format);
-
-            if(r===null||g===null||b===null){
-                alert("Invalid numeric detected.");
-                return;
-            }
-
-            imgData.data[i*4]=r;
-            imgData.data[i*4+1]=g;
-            imgData.data[i*4+2]=b;
-            imgData.data[i*4+3]=255;
-        }
-    }
-
-    ctx.putImageData(imgData,0,0);
-
-    canvas2D.style.width="300px";
-    canvas2D.style.height="300px";
+if(format==="colorcode"){
+let hex=values[i].replace("#","");
+r=parseInt(hex.substring(0,2),16);
+g=parseInt(hex.substring(2,4),16);
+b=parseInt(hex.substring(4,6),16);
+}else{
+r=parseInt(values[i*3]);
+g=parseInt(values[i*3+1]);
+b=parseInt(values[i*3+2]);
 }
 
-function downloadPNG(){
-    let link=document.createElement("a");
-    link.download="render.png";
-    link.href=canvas2D.toDataURL();
-    link.click();
+imgData.data[i*4]=r;
+imgData.data[i*4+1]=g;
+imgData.data[i*4+2]=b;
+imgData.data[i*4+3]=255;
+}
+
+ctx.putImageData(imgData,0,0);
+
+canvas2D.style.width="300px";
+canvas2D.style.height="300px";
+
+let end=performance.now();
+let ms=(end-start).toFixed(2);
+let fps=(1000/ms).toFixed(2);
+
+document.getElementById("stats2D")
+.textContent="Render: "+ms+" ms | FPS: "+fps;
 }
