@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Numeral Engine V10</title>
+<title>Voxel Engine V11</title>
 
 <style>
 body{
@@ -13,15 +13,6 @@ font-family:monospace;
 text-align:center;
 margin:0;
 padding:20px;
-}
-
-h2{margin-bottom:5px;}
-
-.instructions{
-font-size:14px;
-opacity:0.8;
-margin-bottom:20px;
-line-height:1.5em;
 }
 
 button,input,select,textarea{
@@ -35,7 +26,7 @@ font-size:15px;
 
 textarea{
 width:95%;
-max-width:650px;
+max-width:700px;
 }
 
 canvas{
@@ -62,23 +53,7 @@ opacity:0.85;
 
 <body>
 
-<h2>Numeral Engine V10</h2>
-
-<div class="instructions">
-<b>2D Engine:</b><br>
-• Size format: X-Y (example: 4-4)<br>
-• Binary/Decimal/Hex/Octal/Morse require R G B values per pixel<br>
-• ColorCode requires #RRGGBB per pixel<br>
-• Stress Mode generates correct amount automatically<br><br>
-
-<b>3D Engine:</b><br>
-• Size format: X-Y-Z (example: 3-3-3)<br>
-• Edit Cube → Full solid voxel grid (limit 10-10-10)<br>
-• Edit Faces → Hollow surface only (limit 25-25-25)<br>
-• Stress Mode auto-fills correct surface/volume count<br>
-• Transparency slider affects all voxels<br>
-• Swipe to rotate • Pinch to zoom
-</div>
+<h2>Voxel Engine V11</h2>
 
 <button onclick="show2D()">2D Mode</button>
 <button onclick="show3D()">3D Mode</button>
@@ -90,33 +65,22 @@ opacity:0.85;
 <h3>2D Engine</h3>
 
 Size (X-Y):
-<input id="size" value="2-2">
+<input id="size2D" value="2-2">
 
-Format:
-<select id="format">
-<option value="binary">Binary</option>
-<option value="decimal">Decimal</option>
-<option value="hex">Hex</option>
-<option value="octal">Octal</option>
-<option value="morse">Morse</option>
-<option value="colorcode">ColorCode</option>
-</select>
-
-<select id="modeSelect">
+<select id="mode2DSelect">
 <option value="normal">Normal</option>
 <option value="stress">Stress</option>
 </select>
 
-<button onclick="generateStress()">Generate</button>
+<button onclick="generate2D()">Generate</button>
 
 <br>
 
-<textarea id="inputData" rows="4"></textarea>
+<textarea id="input2D" rows="4"></textarea>
 
 <br>
 
-<button onclick="renderImage()">Convert</button>
-<button onclick="downloadPNG()">Download PNG</button>
+<button onclick="convert2D()">Convert</button>
 
 <div class="stats" id="stats2D"></div>
 
@@ -135,29 +99,21 @@ Format:
 Size (X-Y-Z):
 <input id="size3D" value="2-2-2">
 
-Format:
-<select id="format3D">
-<option value="binary">Binary</option>
-<option value="decimal">Decimal</option>
-<option value="hex">Hex</option>
-<option value="octal">Octal</option>
-<option value="morse">Morse</option>
-<option value="colorcode">ColorCode</option>
-</select>
+<br>
 
 <button onclick="setEditMode('cube')">Edit Cube</button>
 <button onclick="setEditMode('faces')">Edit Faces</button>
 
-<select id="modeSelect3D">
+<select id="mode3DSelect">
 <option value="normal">Normal</option>
 <option value="stress">Stress</option>
 </select>
 
-<button onclick="generateStress3D()">Generate</button>
+<button onclick="generate3D()">Generate</button>
 
 <br>
 
-<textarea id="inputData3D" rows="4"></textarea>
+<textarea id="input3D" rows="4"></textarea>
 
 <br>
 
