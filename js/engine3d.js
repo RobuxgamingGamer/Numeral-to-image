@@ -32,7 +32,7 @@ camera.position.z=6;
 /* NO LIGHTS AT ALL */
 
 material=new THREE.MeshBasicMaterial({
-color:0x00cc66,      // darker green
+color:0x006633,   // much darker green
 transparent:true,
 opacity:1
 });
