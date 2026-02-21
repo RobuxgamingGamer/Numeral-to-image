@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Numeral Engine </title>
+<title>Numeral Engine V6</title>
 
 <style>
 body{
@@ -20,22 +20,22 @@ h2{ margin-bottom:10px; }
 .instructions{
     font-size:14px;
     opacity:0.85;
-    margin-bottom:15px;
-    line-height:1.5em;
+    margin-bottom:20px;
+    line-height:1.6em;
 }
 
 button, input, select, textarea{
-    font-size:18px;
+    font-size:17px;
     background:#000;
     color:#00ff88;
     border:1px solid #00ff88;
-    padding:10px 16px;
+    padding:8px 14px;
     margin:6px;
 }
 
 textarea{
     width:95%;
-    max-width:500px;
+    max-width:600px;
 }
 
 canvas{
@@ -50,38 +50,36 @@ canvas{
     margin-top:10px;
 }
 
-.section{
-    margin-top:20px;
-}
+.section{ margin-top:25px; }
+.hidden{ display:none; }
 </style>
 </head>
 
 <body>
 
-<h2>Numeral Engine</h2>
+<h2>Numeral Engine V6</h2>
 
 <div class="instructions">
-<strong>2D Engine Instructions:</strong><br>
-• Size format: X-Y (example: 4-4 means width 4 pixels, height 4 pixels)<br>
-• Binary / Morse require 8 characters per value<br>
-• Decimal range: 0–255<br>
-• Hex range: 00–FF<br>
-• Octal max: 377<br>
-• ColorCode format: #RRGGBB<br>
-• Stress Mode generates random valid values automatically<br><br>
 
-<strong>3D Engine Instructions:</strong><br>
-• Size format: X-Y-Z (width-height-depth)<br>
-• Example: 3-2-5<br>
-• Swipe to rotate<br>
-• Pinch to zoom<br>
-• Transparency slider changes opacity
+<strong>2D Engine</strong><br>
+• Size format: X-Y (example: 4-4)<br>
+• Numeric formats require R G B values<br>
+• ColorCode requires #RRGGBB<br>
+• Stress Mode auto-generates correct values<br><br>
+
+<strong>3D Engine</strong><br>
+• Size format: X-Y-Z (example: 2-2-2)<br>
+• Edit Cube → voxel grid coloring<br>
+• Edit All 6 Faces → single cube with 6 colored faces<br>
+• Swipe to rotate • Pinch to zoom<br>
+• Voxel limit: 10-10-10
 </div>
 
 <button onclick="show2D()">2D Mode</button>
 <button onclick="show3D()">3D Mode</button>
 
 <!-- ================= 2D ================= -->
+
 <div id="mode2D" class="section">
 
 <h3>2D Engine</h3>
@@ -118,22 +116,72 @@ Mode:
 <button onclick="renderImage()">Convert</button>
 <button onclick="downloadPNG()">Download PNG</button>
 
-<p id="error"></p>
+<br><br>
 
 <canvas id="canvas2D"></canvas>
 
 </div>
 
 <!-- ================= 3D ================= -->
-<div id="mode3D" class="section" style="display:none;">
+
+<div id="mode3D" class="section hidden">
 
 <h3>3D Engine</h3>
 
 Size (X-Y-Z):
 <input id="size3D" value="2-2-2">
-<button onclick="updateShape()">Update Shape</button>
+
+Format:
+<select id="format3D">
+<option value="binary">Binary</option>
+<option value="decimal">Decimal</option>
+<option value="hex">Hex</option>
+<option value="octal">Octal</option>
+<option value="morse">Morse</option>
+<option value="colorcode">ColorCode</option>
+</select>
 
 <br>
+
+<button onclick="setEditMode('cube')">Edit Cube</button>
+<button onclick="setEditMode('faces')">Edit All 6 Faces</button>
+
+<br><br>
+
+<!-- Cube Editor -->
+<div id="cubeEditor">
+
+Mode:
+<select id="modeSelect3D">
+<option value="normal">Normal</option>
+<option value="stress">Stress Test Mode</option>
+</select>
+
+<button onclick="generateStress3D()">Commit Stress Test</button>
+
+<br>
+
+<textarea id="inputData3D" rows="4"></textarea>
+
+</div>
+
+<!-- Face Editor -->
+<div id="faceEditor" class="hidden">
+
+Front: <input id="faceFront"><br>
+Back: <input id="faceBack"><br>
+Left: <input id="faceLeft"><br>
+Right: <input id="faceRight"><br>
+Top: <input id="faceTop"><br>
+Bottom: <input id="faceBottom"><br>
+
+</div>
+
+<br>
+
+<button onclick="convert3D()">Convert</button>
+
+<br><br>
 
 Transparency:
 <input type="range" id="opacitySlider" min="0" max="1" step="0.01" value="1">
@@ -142,23 +190,27 @@ Transparency:
 
 </div>
 
+<!-- Three.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
+<!-- Engines -->
 <script src="js/engine2d.js"></script>
 <script src="js/engine3d.js"></script>
 
 <script>
+
 function show2D(){
-document.getElementById("mode2D").style.display="block";
-document.getElementById("mode3D").style.display="none";
+    document.getElementById("mode2D").classList.remove("hidden");
+    document.getElementById("mode3D").classList.add("hidden");
 }
 
 function show3D(){
-document.getElementById("mode2D").style.display="none";
-document.getElementById("mode3D").style.display="block";
-init3D();
+    document.getElementById("mode2D").classList.add("hidden");
+    document.getElementById("mode3D").classList.remove("hidden");
+    init3D();
 }
+
 </script>
 
 </body>
