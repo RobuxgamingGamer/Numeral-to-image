@@ -3,95 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Numeral Voxel Engine — GOLD BUILD</title>
+<title>Numeral Voxel Engine – GOLD BUILD</title>
 
-<style>
+<link rel="stylesheet" href="css/style.css">
 
-/* ================= GLOBAL ================= */
-
-body {
-  background: black;
-  color: #00ff88;
-  font-family: monospace;
-  margin: 0;
-  padding: 20px;
-}
-
-h1, h2, h3 {
-  text-align: center;
-}
-
-section {
-  border: 2px solid #00ff88;
-  padding: 20px;
-  margin-top: 30px;
-}
-
-button {
-  background: black;
-  border: 2px solid #00ff88;
-  color: #00ff88;
-  padding: 10px 15px;
-  margin: 5px;
-  cursor: pointer;
-}
-
-button.active {
-  background: #00ff88;
-  color: black;
-}
-
-textarea, input, select {
-  background: black;
-  border: 2px solid #00ff88;
-  color: #00ff88;
-  padding: 8px;
-  width: 100%;
-  margin-top: 8px;
-}
-
-textarea {
-  min-height: 120px;
-  resize: vertical;
-}
-
-.hidden {
-  display: none;
-}
-
-.error-text {
-  color: red;
-  margin-top: 10px;
-}
-
-.stats-text {
-  margin-top: 10px;
-}
-
-.mode-switch {
-  text-align: center;
-  margin-top: 20px;
-}
-
-.opacity-block {
-  margin-top: 20px;
-}
-
-#threeContainer {
-  width: 100%;
-  height: 500px;
-  border: 2px solid #00ff88;
-  margin-top: 20px;
-}
-
-</style>
 </head>
 <body>
 
-<h1>Numeral Voxel Engine — GOLD BUILD</h1>
+<div class="wrapper">
 
-<section>
-<h3>GLOBAL RULES:</h3>
+<h1>Numeral Voxel Engine – GOLD BUILD</h1>
+
+<div class="global-rules">
+<h2>GLOBAL RULES:</h2>
 <ul>
 <li>FPS + ms calculated only during Convert</li>
 <li>Cube mode max 10-10-10 (solid)</li>
@@ -100,23 +24,23 @@ textarea {
 <li>Binary/Decimal/Hex/Octal/Morse = 3 values per pixel</li>
 <li>ColorCode = 1 value per pixel (#RRGGBB)</li>
 </ul>
-</section>
-
+</div>
 
 <div class="mode-switch">
 <button id="mode2DBtn">2D Mode</button>
 <button id="mode3DBtn">3D Mode</button>
 </div>
 
+<!-- ========================= -->
+<!-- 2D ENGINE -->
+<!-- ========================= -->
 
-<!-- ======================= 2D SECTION ======================= -->
-
-<section id="engine2DSection">
+<section id="engine2D" class="engine-section active">
 
 <h2>2D Engine</h2>
 
 <label>Size (X-Y):</label>
-<input id="size2D" type="text" value="2-2">
+<input type="text" id="size2D" value="2-2">
 
 <label>Format:</label>
 <select id="format2D">
@@ -128,30 +52,35 @@ textarea {
 <option value="colorcode">ColorCode</option>
 </select>
 
-<div>
+<div class="button-row">
 <button id="stress2DBtn">Stress Test Mode</button>
 <button id="convert2DBtn">Convert</button>
 </div>
 
-<div id="error2D" class="error-text"></div>
-<div id="stats2D" class="stats-text"></div>
+<div class="stats">
+Render Time: <span id="ms2D">0</span> ms |
+FPS: <span id="fps2D">0</span>
+</div>
 
-<textarea id="input2D"></textarea>
+<textarea id="input2D" rows="6"></textarea>
 
-<canvas id="canvas2D" width="500" height="500"
-style="border:2px solid #00ff88; margin-top:20px;"></canvas>
+<div class="engine-frame">
+<canvas id="canvas2D"></canvas>
+</div>
 
 </section>
 
 
-<!-- ======================= 3D SECTION ======================= -->
+<!-- ========================= -->
+<!-- 3D ENGINE -->
+<!-- ========================= -->
 
-<section id="engine3DSection" class="hidden">
+<section id="engine3D" class="engine-section">
 
 <h2>3D Engine</h2>
 
 <label>Size (X-Y-Z):</label>
-<input id="size3D" type="text" value="2-2-2">
+<input type="text" id="size3D" value="2-2-2">
 
 <label>Format:</label>
 <select id="format3D">
@@ -163,89 +92,48 @@ style="border:2px solid #00ff88; margin-top:20px;"></canvas>
 <option value="colorcode">ColorCode</option>
 </select>
 
-<div>
-<button id="cubeModeBtn" class="active">Edit Cube</button>
-<button id="facesModeBtn">Edit Faces</button>
+<div class="button-row">
+<button id="editCubeBtn">Edit Cube</button>
+<button id="editFacesBtn">Edit Faces</button>
 </div>
 
-<div>
+<div id="facesInputs" class="faces-container hidden">
+<label>Front:</label><textarea id="faceFront"></textarea>
+<label>Back:</label><textarea id="faceBack"></textarea>
+<label>Left:</label><textarea id="faceLeft"></textarea>
+<label>Right:</label><textarea id="faceRight"></textarea>
+<label>Top:</label><textarea id="faceTop"></textarea>
+<label>Bottom:</label><textarea id="faceBottom"></textarea>
+</div>
+
+<div class="button-row">
 <button id="stress3DBtn">Stress Test Mode</button>
 <button id="convert3DBtn">Convert</button>
 </div>
 
-<div id="error3D" class="error-text"></div>
-<div id="stats3D" class="stats-text"></div>
-
-
-<!-- Cube input -->
-<div id="cubeInputBlock">
-<textarea id="input3D"></textarea>
+<div class="stats">
+Render Time: <span id="ms3D">0</span> ms |
+FPS: <span id="fps3D">0</span>
 </div>
 
+<textarea id="input3D" rows="6"></textarea>
 
-<!-- Faces input -->
-<div id="facesInputBlock" class="hidden">
-
-<h3>Front</h3>
-<textarea id="faceFront"></textarea>
-
-<h3>Back</h3>
-<textarea id="faceBack"></textarea>
-
-<h3>Left</h3>
-<textarea id="faceLeft"></textarea>
-
-<h3>Right</h3>
-<textarea id="faceRight"></textarea>
-
-<h3>Top</h3>
-<textarea id="faceTop"></textarea>
-
-<h3>Bottom</h3>
-<textarea id="faceBottom"></textarea>
-
-</div>
-
-
-<div class="opacity-block">
 <label>Transparency:</label>
-<input id="opacitySlider" type="range" min="0.05" max="1" step="0.05" value="1">
-</div>
+<input type="range" id="transparency3D" min="0" max="1" step="0.01" value="1">
 
+<div class="engine-frame">
 <div id="threeContainer"></div>
+</div>
 
 </section>
 
+</div>
 
-
-<!-- ================= MODE SWITCH SCRIPT ================= -->
-
-<script>
-
-const mode2DBtn = document.getElementById("mode2DBtn");
-const mode3DBtn = document.getElementById("mode3DBtn");
-const engine2D = document.getElementById("engine2DSection");
-const engine3D = document.getElementById("engine3DSection");
-
-mode2DBtn.onclick = () => {
-  engine2D.classList.remove("hidden");
-  engine3D.classList.add("hidden");
-};
-
-mode3DBtn.onclick = () => {
-  engine3D.classList.remove("hidden");
-  engine2D.classList.add("hidden");
-};
-
-</script>
-
-
-<!-- THREE.JS -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-
-<script src="engine2d.js"></script>
-<script src="engine3d.js"></script>
+<script src="libs/three.min.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/engine2d.js"></script>
+<script src="js/engine3d.js"></script>
+<script src="js/app.js"></script>
 
 </body>
 </html>
