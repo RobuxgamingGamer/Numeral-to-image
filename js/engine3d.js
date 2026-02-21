@@ -1,11 +1,16 @@
+// ================= 3D ENGINE V8 =================
+
 let scene, camera, renderer, controls;
 let initialized = false;
-let container = document.getElementById("threeContainer");
 
 let editMode = "cube";
 let voxels = [];
 let mainMesh = null;
+
 let globalOpacity = 1;
+
+const container = document.getElementById("threeContainer");
+const stats3D = document.getElementById("stats3D");
 
 // ================= INIT =================
 
@@ -19,39 +24,61 @@ if(container.offsetHeight === 0){
 }
 
 scene = new THREE.Scene();
+scene.background = new THREE.Color(0x000000);
 
 camera = new THREE.PerspectiveCamera(
-    75,
-    container.offsetWidth / container.offsetHeight,
-    0.1,
-    1000
+75,
+container.offsetWidth / container.offsetHeight,
+0.1,
+1000
 );
 
+camera.position.set(4,4,6);
+
 renderer = new THREE.WebGLRenderer({
-    antialias: true,
-    alpha: false
+antialias:true
 });
 
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(container.offsetWidth, container.offsetHeight);
 
-container.innerHTML = "";
+container.innerHTML="";
 container.appendChild(renderer.domElement);
-
-camera.position.set(4,4,6);
 
 controls = new THREE.OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.dampingFactor = 0.08;
 
-animate();
+window.addEventListener("resize", onResize);
+
 initialized = true;
+animate();
 }
+
+function onResize(){
+camera.aspect = container.offsetWidth/container.offsetHeight;
+camera.updateProjectionMatrix();
+renderer.setSize(container.offsetWidth, container.offsetHeight);
+}
+
+// ================= LOOP + FPS =================
+
+let lastTime = performance.now();
 
 function animate(){
 requestAnimationFrame(animate);
+
+let now = performance.now();
+let delta = now - lastTime;
+lastTime = now;
+
 if(controls) controls.update();
-if(renderer && scene && camera) renderer.render(scene, camera);
+if(renderer && scene && camera) renderer.render(scene,camera);
+
+let fps = (1000/delta).toFixed(2);
+
+stats3D.textContent =
+"Frame: " + delta.toFixed(2) + " ms | FPS: " + fps;
 }
 
 // ================= MODE =================
@@ -59,16 +86,21 @@ if(renderer && scene && camera) renderer.render(scene, camera);
 function setEditMode(mode){
 editMode = mode;
 
-document.getElementById("cubeEditor").classList.toggle("hidden", mode !== "cube");
-document.getElementById("faceEditor").classList.toggle("hidden", mode !== "faces");
+document.getElementById("cubeEditor")
+.classList.toggle("hidden", mode !== "cube");
+
+document.getElementById("faceEditor")
+.classList.toggle("hidden", mode !== "faces");
 }
 
-// ================= CLEAN RESET =================
+// ================= CLEAR =================
 
 function clearScene(){
+
 while(scene.children.length > 0){
-    scene.remove(scene.children[0]);
+scene.remove(scene.children[0]);
 }
+
 voxels = [];
 mainMesh = null;
 }
@@ -77,20 +109,20 @@ mainMesh = null;
 
 function createMaterial(color){
 return new THREE.MeshBasicMaterial({
-    color: color,
-    transparent: true,
-    opacity: globalOpacity,
-    depthWrite: globalOpacity === 1
+color: color,
+transparent:true,
+opacity: globalOpacity,
+depthWrite: globalOpacity === 1
 });
 }
 
-// ================= VOXEL BUILD =================
+// ================= BUILD VOXELS =================
 
 function buildVoxelGrid(x,y,z){
 
 if(x>10 || y>10 || z>10){
-    alert("Voxel limit is 10-10-10.");
-    return false;
+alert("Voxel limit is 10-10-10.");
+return false;
 }
 
 clearScene();
@@ -107,12 +139,12 @@ for(let k=0;k<z;k++){
 let geo = new THREE.BoxGeometry(dx,dy,dz);
 let mat = createMaterial(0x002b1a);
 
-let cube = new THREE.Mesh(geo, mat);
+let cube = new THREE.Mesh(geo,mat);
 
 cube.position.set(
-    (i - x/2) * dx + dx/2,
-    (j - y/2) * dy + dy/2,
-    (k - z/2) * dz + dz/2
+(i-x/2)*dx + dx/2,
+(j-y/2)*dy + dy/2,
+(k-z/2)*dz + dz/2
 );
 
 scene.add(cube);
@@ -123,7 +155,7 @@ voxels.push(cube);
 return true;
 }
 
-// ================= FACE BUILD =================
+// ================= BUILD FACE CUBE =================
 
 function buildFaceCube(){
 
@@ -134,7 +166,7 @@ let geo = new THREE.BoxGeometry(2,2,2);
 let materials = [];
 
 for(let i=0;i<6;i++){
-    materials.push(createMaterial(0x002b1a));
+materials.push(createMaterial(0x002b1a));
 }
 
 mainMesh = new THREE.Mesh(geo, materials);
@@ -152,7 +184,7 @@ return parseInt(value,2);
 
 if(format==="decimal"){
 let n=parseInt(value,10);
-return (n>=0&&n<=255)?n:null;
+return (n>=0 && n<=255)?n:null;
 }
 
 if(format==="hex"){
@@ -181,8 +213,8 @@ function convert3D(){
 
 init3D();
 
-let format = document.getElementById("format3D").value;
-let size = document.getElementById("size3D").value.split("-");
+let format=document.getElementById("format3D").value;
+let size=document.getElementById("size3D").value.split("-");
 let x=parseInt(size[0]);
 let y=parseInt(size[1]);
 let z=parseInt(size[2]);
@@ -196,7 +228,7 @@ let values=document.getElementById("inputData3D")
 
 if(format==="colorcode"){
 
-if(values.length !== x*y*z){
+if(values.length!==x*y*z){
 alert("Need X*Y*Z values.");
 return;
 }
@@ -207,7 +239,7 @@ voxels[i].material.color.set(values[i]);
 
 }else{
 
-if(values.length !== x*y*z*3){
+if(values.length!==x*y*z*3){
 alert("Need X*Y*Z*3 values.");
 return;
 }
@@ -231,7 +263,7 @@ voxels[i].material.color.setRGB(r/255,g/255,b/255);
 
 buildFaceCube();
 
-let faceIds=[
+let ids=[
 "faceRight","faceLeft",
 "faceTop","faceBottom",
 "faceFront","faceBack"
@@ -240,7 +272,7 @@ let faceIds=[
 if(format==="colorcode"){
 
 for(let i=0;i<6;i++){
-let val=document.getElementById(faceIds[i]).value;
+let val=document.getElementById(ids[i]).value;
 mainMesh.material[i]=createMaterial(val);
 }
 
@@ -248,7 +280,7 @@ mainMesh.material[i]=createMaterial(val);
 
 for(let i=0;i<6;i++){
 
-let input=document.getElementById(faceIds[i])
+let input=document.getElementById(ids[i])
 .value.trim().split(/\s+/);
 
 if(input.length!==3){
@@ -268,7 +300,7 @@ new THREE.Color(r/255,g/255,b/255)
 }
 }
 
-// ================= STRESS MODE =================
+// ================= STRESS =================
 
 function generateStress3D(){
 
@@ -278,7 +310,7 @@ let format=document.getElementById("format3D").value;
 
 if(editMode==="faces"){
 
-let faceIds=[
+let ids=[
 "faceRight","faceLeft",
 "faceTop","faceBottom",
 "faceFront","faceBack"
@@ -292,7 +324,7 @@ let r=Math.floor(Math.random()*256).toString(16).padStart(2,"0");
 let g=Math.floor(Math.random()*256).toString(16).padStart(2,"0");
 let b=Math.floor(Math.random()*256).toString(16).padStart(2,"0");
 
-document.getElementById(faceIds[i]).value="#"+r+g+b;
+document.getElementById(ids[i]).value="#"+r+g+b;
 
 }else{
 
@@ -311,7 +343,7 @@ vals.push(bin.replace(/1/g,"-").replace(/0/g,"."));
 }
 }
 
-document.getElementById(faceIds[i]).value=vals.join(" ");
+document.getElementById(ids[i]).value=vals.join(" ");
 }
 }
 
@@ -337,7 +369,6 @@ output.push("#"+r+g+b);
 }else{
 
 for(let j=0;j<3;j++){
-
 let val=Math.floor(Math.random()*256);
 
 if(format==="binary") output.push(val.toString(2).padStart(8,"0"));
@@ -352,11 +383,12 @@ output.push(bin.replace(/1/g,"-").replace(/0/g,"."));
 }
 }
 
-document.getElementById("inputData3D").value=output.join(" ");
+document.getElementById("inputData3D")
+.value=output.join(" ");
 }
 }
 
-// ================= CLEAN TRANSPARENCY =================
+// ================= OPACITY =================
 
 document.getElementById("opacitySlider")
 .addEventListener("input",function(){
