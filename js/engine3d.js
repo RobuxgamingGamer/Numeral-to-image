@@ -29,14 +29,10 @@ container.appendChild(renderer.domElement);
 
 camera.position.z=6;
 
-scene.add(new THREE.AmbientLight(0x404040));
+/* NO LIGHTS AT ALL */
 
-let light=new THREE.DirectionalLight(0xffffff,1);
-light.position.set(5,5,5);
-scene.add(light);
-
-material=new THREE.MeshStandardMaterial({
-color:0x00ff88,
+material=new THREE.MeshBasicMaterial({
+color:0x00cc66,      // darker green
 transparent:true,
 opacity:1
 });
@@ -55,6 +51,7 @@ function createMesh(x,y,z){
 if(mesh) scene.remove(mesh);
 
 let geometry=new THREE.BoxGeometry(x,y,z);
+
 mesh=new THREE.Mesh(geometry,material);
 
 let edges=new THREE.EdgesGeometry(geometry);
