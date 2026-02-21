@@ -1,6 +1,7 @@
 /* ============================================================
-   NUMERAL VOXEL ENGINE — 2D ENGINE (GOLD ARCHITECTURE)
-   Max Size: 1500-1500
+   NUMERAL ENGINE — 2D CORE SYSTEM (FULL REBUILD)
+
+   Max Resolution: 1500-1500
    Formats:
      - binary
      - decimal
@@ -8,30 +9,88 @@
      - octal
      - morse
      - colorcode
-   Performance measured ONLY during convert.
+
+   Performance:
+     - Measured ONLY during Convert
+     - Frozen stats
+     - No frame updates
+
+   Architecture Goals:
+     - Strict validation
+     - Deterministic pixel writing
+     - Zero silent failure
+     - Clear error isolation
+     - Layout-safe scaling
    ============================================================ */
+
+
+/* ============================================================
+   DOM REFERENCES
+============================================================ */
 
 const canvas2D = document.getElementById("canvas2D");
 const ctx2D = canvas2D.getContext("2d");
+
 const input2D = document.getElementById("input2D");
 const size2DInput = document.getElementById("size2D");
 const format2DSelect = document.getElementById("format2D");
+
+const stress2DBtn = document.getElementById("stress2DBtn");
+const convert2DBtn = document.getElementById("convert2DBtn");
+
 const error2D = document.getElementById("error2D");
 const stats2D = document.getElementById("stats2D");
 
-const MAX_2D = 1500;
 
-/* ===============================
+/* ============================================================
+   CONSTANTS
+============================================================ */
+
+const MAX_2D_SIZE = 1500;
+const MAX_CANVAS_DISPLAY = 500;
+
+
+/* ============================================================
+   STATE OBJECT
+============================================================ */
+
+const state2D = {
+    width: 0,
+    height: 0,
+    format: "binary"
+};
+
+
+/* ============================================================
+   INITIALIZATION
+============================================================ */
+
+function init2DEngine() {
+
+    stress2DBtn.addEventListener("click", stress2D);
+    convert2DBtn.addEventListener("click", convert2D);
+
+    format2DSelect.addEventListener("change", () => {
+        state2D.format = format2DSelect.value;
+    });
+
+    state2D.format = format2DSelect.value;
+}
+
+init2DEngine();
+
+
+/* ============================================================
    SIZE VALIDATION
-=================================*/
+============================================================ */
 
-function get2DSize() {
+function parseSize2D() {
 
     const raw = size2DInput.value.trim();
     const parts = raw.split("-");
 
     if (parts.length !== 2) {
-        show2DError("Size must be X-Y.");
+        show2DError("Size must be X-Y format.");
         return null;
     }
 
@@ -48,42 +107,48 @@ function get2DSize() {
         return null;
     }
 
-    if (w > MAX_2D || h > MAX_2D) {
+    if (w > MAX_2D_SIZE || h > MAX_2D_SIZE) {
         show2DError("Max size is 1500-1500.");
         return null;
     }
 
+    state2D.width = w;
+    state2D.height = h;
+
     return { w, h };
 }
 
-/* ===============================
-   FORMAT PARSING
-=================================*/
 
-function parseByte(value, format) {
+/* ============================================================
+   FORMAT PARSING LAYER
+============================================================ */
+
+function parseByte2D(token, format) {
 
     switch (format) {
 
         case "binary":
-            if (!/^[01]{8}$/.test(value)) return null;
-            return parseInt(value, 2);
+            if (!/^[01]{8}$/.test(token)) return null;
+            return parseInt(token, 2);
 
         case "decimal":
-            if (!/^\d+$/.test(value)) return null;
-            const d = parseInt(value, 10);
+            if (!/^\d+$/.test(token)) return null;
+            const d = parseInt(token, 10);
             return (d >= 0 && d <= 255) ? d : null;
 
         case "hex":
-            if (!/^[0-9a-fA-F]{1,2}$/.test(value)) return null;
-            return parseInt(value, 16);
+            if (!/^[0-9a-fA-F]{1,2}$/.test(token)) return null;
+            return parseInt(token, 16);
 
         case "octal":
-            if (!/^[0-7]{1,3}$/.test(value)) return null;
-            return parseInt(value, 8);
+            if (!/^[0-7]{1,3}$/.test(token)) return null;
+            return parseInt(token, 8);
 
         case "morse":
-            if (!/^[\.\-]{8}$/.test(value)) return null;
-            const binary = value.replace(/-/g, "1").replace(/\./g, "0");
+            if (!/^[\.\-]{8}$/.test(token)) return null;
+            const binary = token
+                .replace(/-/g, "1")
+                .replace(/\./g, "0");
             return parseInt(binary, 2);
 
         default:
@@ -91,25 +156,26 @@ function parseByte(value, format) {
     }
 }
 
-/* ===============================
-   STRESS MODE
-=================================*/
+
+/* ============================================================
+   STRESS MODE GENERATOR
+============================================================ */
 
 function stress2D() {
 
     clear2DError();
     clear2DStats();
 
-    const size = get2DSize();
+    const size = parseSize2D();
     if (!size) return;
 
     const { w, h } = size;
-    const total = w * h;
-    const format = format2DSelect.value;
+    const totalPixels = w * h;
+    const format = state2D.format;
 
-    let output = [];
+    const output = [];
 
-    for (let i = 0; i < total; i++) {
+    for (let i = 0; i < totalPixels; i++) {
 
         if (format === "colorcode") {
 
@@ -128,23 +194,28 @@ function stress2D() {
 
             for (let c = 0; c < 3; c++) {
 
-                const val = randomByte();
+                const value = randomByte();
 
-                if (format === "binary")
-                    output.push(val.toString(2).padStart(8, "0"));
-
-                if (format === "decimal")
-                    output.push(val.toString());
-
-                if (format === "hex")
-                    output.push(val.toString(16).toUpperCase());
-
-                if (format === "octal")
-                    output.push(val.toString(8));
-
-                if (format === "morse") {
-                    const bin = val.toString(2).padStart(8, "0");
-                    output.push(bin.replace(/1/g, "-").replace(/0/g, "."));
+                switch (format) {
+                    case "binary":
+                        output.push(value.toString(2).padStart(8, "0"));
+                        break;
+                    case "decimal":
+                        output.push(value.toString());
+                        break;
+                    case "hex":
+                        output.push(value.toString(16).toUpperCase());
+                        break;
+                    case "octal":
+                        output.push(value.toString(8));
+                        break;
+                    case "morse":
+                        const bin = value.toString(2).padStart(8, "0");
+                        output.push(
+                            bin.replace(/1/g, "-")
+                               .replace(/0/g, ".")
+                        );
+                        break;
                 }
             }
         }
@@ -153,43 +224,53 @@ function stress2D() {
     input2D.value = output.join(" ");
 }
 
-/* ===============================
-   CONVERT
-=================================*/
+
+/* ============================================================
+   CONVERT CORE
+============================================================ */
 
 function convert2D() {
 
     clear2DError();
     clear2DStats();
 
-    const start = performance.now();
+    const startTime = performance.now();
 
-    const size = get2DSize();
+    const size = parseSize2D();
     if (!size) return;
 
     const { w, h } = size;
-    const format = format2DSelect.value;
+    const format = state2D.format;
 
-    const tokens = input2D.value.trim().split(/\s+/);
+    const rawInput = input2D.value.trim();
+    if (!rawInput) {
+        show2DError("Input is empty.");
+        return;
+    }
 
-    const expected =
+    const tokens = rawInput.split(/\s+/);
+
+    const expectedTokenCount =
         format === "colorcode"
         ? w * h
         : w * h * 3;
 
-    if (tokens.length !== expected) {
-        show2DError("Incorrect number of values.");
+    if (tokens.length !== expectedTokenCount) {
+        show2DError(
+            "Expected " + expectedTokenCount +
+            " values. Got " + tokens.length + "."
+        );
         return;
     }
 
     canvas2D.width = w;
     canvas2D.height = h;
 
-    const img = ctx2D.createImageData(w, h);
-    const data = img.data;
+    const imageData = ctx2D.createImageData(w, h);
+    const data = imageData.data;
 
-    let index = 0;
     let tokenIndex = 0;
+    let pixelIndex = 0;
 
     for (let i = 0; i < w * h; i++) {
 
@@ -200,66 +281,70 @@ function convert2D() {
             const hex = tokens[tokenIndex++].replace("#", "");
 
             if (!/^[0-9a-fA-F]{6}$/.test(hex)) {
-                show2DError("Invalid colorcode.");
+                show2DError("Invalid colorcode detected.");
                 return;
             }
 
-            r = parseInt(hex.substring(0,2),16);
-            g = parseInt(hex.substring(2,4),16);
-            b = parseInt(hex.substring(4,6),16);
+            r = parseInt(hex.substring(0, 2), 16);
+            g = parseInt(hex.substring(2, 4), 16);
+            b = parseInt(hex.substring(4, 6), 16);
 
         } else {
 
-            r = parseByte(tokens[tokenIndex++], format);
-            g = parseByte(tokens[tokenIndex++], format);
-            b = parseByte(tokens[tokenIndex++], format);
+            r = parseByte2D(tokens[tokenIndex++], format);
+            g = parseByte2D(tokens[tokenIndex++], format);
+            b = parseByte2D(tokens[tokenIndex++], format);
 
             if (r === null || g === null || b === null) {
-                show2DError("Invalid numeric value.");
+                show2DError("Invalid numeric value detected.");
                 return;
             }
         }
 
-        data[index++] = r;
-        data[index++] = g;
-        data[index++] = b;
-        data[index++] = 255;
+        data[pixelIndex++] = r;
+        data[pixelIndex++] = g;
+        data[pixelIndex++] = b;
+        data[pixelIndex++] = 255;
     }
 
-    ctx2D.putImageData(img, 0, 0);
-    scaleCanvasToFit();
+    ctx2D.putImageData(imageData, 0, 0);
 
-    const end = performance.now();
-    const time = end - start;
-    const fps = 1000 / time;
+    scaleCanvas2D();
+
+    const endTime = performance.now();
+    const renderTime = endTime - startTime;
+    const fps = 1000 / renderTime;
 
     stats2D.textContent =
-        "Render Time: " + time.toFixed(2) + " ms | FPS: " + fps.toFixed(2);
+        "Render Time: " +
+        renderTime.toFixed(2) +
+        " ms | FPS: " +
+        fps.toFixed(2);
 }
 
-/* ===============================
+
+/* ============================================================
    SAFE SCALING
-=================================*/
+============================================================ */
 
-function scaleCanvasToFit() {
+function scaleCanvas2D() {
 
-    const maxSize = 450;
-
-    const scaleW = maxSize / canvas2D.width;
-    const scaleH = maxSize / canvas2D.height;
+    const scaleW = MAX_CANVAS_DISPLAY / canvas2D.width;
+    const scaleH = MAX_CANVAS_DISPLAY / canvas2D.height;
 
     const scale = Math.min(scaleW, scaleH);
 
     canvas2D.style.width =
-        canvas2D.width * scale + "px";
+        (canvas2D.width * scale) + "px";
 
     canvas2D.style.height =
-        canvas2D.height * scale + "px";
+        (canvas2D.height * scale) + "px";
 }
 
-/* ===============================
-   UTIL
-=================================*/
+
+/* ============================================================
+   UTILITIES
+============================================================ */
 
 function randomByte() {
     return Math.floor(Math.random() * 256);
