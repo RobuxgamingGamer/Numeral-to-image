@@ -1,5 +1,6 @@
-const canvas2D=document.getElementById("canvas2D");
-const ctx=canvas2D.getContext("2d");
+const canvas=document.getElementById("canvas2D");
+const ctx=canvas.getContext("2d");
+const stats=document.getElementById("stats2D");
 
 function renderImage(){
 
@@ -9,16 +10,14 @@ let size=document.getElementById("size").value.split("-");
 let w=parseInt(size[0]);
 let h=parseInt(size[1]);
 
-canvas2D.width=w;
-canvas2D.height=h;
+canvas.width=w;
+canvas.height=h;
 
 let imgData=ctx.createImageData(w,h);
 let values=document.getElementById("inputData")
 .value.trim().split(/\s+/);
 
 let format=document.getElementById("format").value;
-
-if(values.length < w*h*3 && format!=="colorcode") return;
 
 for(let i=0;i<w*h;i++){
 
@@ -43,13 +42,12 @@ imgData.data[i*4+3]=255;
 
 ctx.putImageData(imgData,0,0);
 
-canvas2D.style.width="300px";
-canvas2D.style.height="300px";
+canvas.style.width="350px";
+canvas.style.height="350px";
 
 let end=performance.now();
 let ms=(end-start).toFixed(2);
-let fps=(1000/ms).toFixed(2);
+let fps=(1000/ms).toFixed(1);
 
-document.getElementById("stats2D")
-.textContent="Render: "+ms+" ms | FPS: "+fps;
+stats.textContent="Render: "+ms+" ms | FPS: "+fps;
 }
