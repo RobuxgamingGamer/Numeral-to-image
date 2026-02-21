@@ -3,16 +3,34 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Voxel Engine V11</title>
+<title>Numeral Voxel Engine GOLD</title>
 
 <style>
 body{
 background:#000;
 color:#00ff88;
 font-family:monospace;
-text-align:center;
 margin:0;
 padding:20px;
+text-align:center;
+}
+
+h2{margin-bottom:5px;}
+
+.instructions{
+text-align:left;
+max-width:900px;
+margin:0 auto 25px auto;
+font-size:14px;
+line-height:1.6em;
+border:1px solid #00ff88;
+padding:15px;
+}
+
+.section{
+margin-top:20px;
+border:1px solid #00ff88;
+padding:15px;
 }
 
 button,input,select,textarea{
@@ -21,12 +39,13 @@ color:#00ff88;
 border:1px solid #00ff88;
 padding:6px 10px;
 margin:5px;
-font-size:15px;
+font-size:14px;
 }
 
 textarea{
 width:95%;
-max-width:700px;
+max-width:850px;
+height:120px;
 }
 
 canvas{
@@ -36,55 +55,80 @@ image-rendering:pixelated;
 
 #threeContainer{
 width:100%;
-height:450px;
+height:500px;
 border:1px solid #00ff88;
 margin-top:10px;
 }
 
-.hidden{display:none;}
+.error{
+color:#ff4444;
+margin-top:10px;
+}
 
 .stats{
 margin-top:8px;
-font-size:14px;
-opacity:0.85;
+}
+.hidden{display:none;}
+.activeMode{
+background:#00ff88;
+color:#000;
 }
 </style>
 </head>
 
 <body>
 
-<h2>Voxel Engine V11</h2>
+<h2>Numeral Voxel Engine — GOLD BUILD</h2>
+
+<div class="instructions">
+<b>GLOBAL RULES:</b><br>
+• FPS + ms are calculated only during Convert.<br>
+• Stress Test fills correct amount based on size, format and mode.<br>
+• Invalid size or input stops rendering and shows error.<br><br>
+
+<b>2D ENGINE:</b><br>
+• Size: X-Y<br>
+• Max: 1500-1500<br>
+• Binary/Decimal/Hex/Octal/Morse require 3 values per pixel (R G B)<br>
+• ColorCode requires 1 value per pixel (#RRGGBB)<br><br>
+
+<b>3D ENGINE:</b><br>
+• Size: X-Y-Z<br>
+• Edit Cube = Solid Volume (Max 10-10-10)<br>
+• Edit Faces = Hollow Surface Only (Max 25-25-25)<br>
+• 6 separate face inputs in Faces mode<br>
+• Transparency slider updates material cleanly<br>
+</div>
 
 <button onclick="show2D()">2D Mode</button>
 <button onclick="show3D()">3D Mode</button>
 
 <!-- ================= 2D ================= -->
 
-<div id="mode2D">
+<div id="mode2D" class="section">
 
 <h3>2D Engine</h3>
 
 Size (X-Y):
 <input id="size2D" value="2-2">
 
-<select id="mode2DSelect">
-<option value="normal">Normal</option>
-<option value="stress">Stress</option>
+Format:
+<select id="format2D">
+<option value="binary">Binary</option>
+<option value="decimal">Decimal</option>
+<option value="hex">Hex</option>
+<option value="octal">Octal</option>
+<option value="morse">Morse</option>
+<option value="colorcode">ColorCode</option>
 </select>
 
-<button onclick="generate2D()">Generate</button>
-
-<br>
-
-<textarea id="input2D" rows="4"></textarea>
-
-<br>
-
+<button onclick="stress2D()">Stress Test Mode</button>
 <button onclick="convert2D()">Convert</button>
 
+<div class="error" id="error2D"></div>
 <div class="stats" id="stats2D"></div>
 
-<br>
+<textarea id="input2D"></textarea>
 
 <canvas id="canvas2D"></canvas>
 
@@ -92,39 +136,49 @@ Size (X-Y):
 
 <!-- ================= 3D ================= -->
 
-<div id="mode3D" class="hidden">
+<div id="mode3D" class="section hidden">
 
 <h3>3D Engine</h3>
 
 Size (X-Y-Z):
 <input id="size3D" value="2-2-2">
 
-<br>
-
-<button onclick="setEditMode('cube')">Edit Cube</button>
-<button onclick="setEditMode('faces')">Edit Faces</button>
-
-<select id="mode3DSelect">
-<option value="normal">Normal</option>
-<option value="stress">Stress</option>
+Format:
+<select id="format3D">
+<option value="binary">Binary</option>
+<option value="decimal">Decimal</option>
+<option value="hex">Hex</option>
+<option value="octal">Octal</option>
+<option value="morse">Morse</option>
+<option value="colorcode">ColorCode</option>
 </select>
 
-<button onclick="generate3D()">Generate</button>
-
 <br>
 
-<textarea id="input3D" rows="4"></textarea>
+<button id="cubeBtn" onclick="setMode('cube')">Edit Cube</button>
+<button id="facesBtn" onclick="setMode('faces')">Edit Faces</button>
 
-<br>
-
+<button onclick="stress3D()">Stress Test Mode</button>
 <button onclick="convert3D()">Convert</button>
 
-<br>
+<div class="error" id="error3D"></div>
+<div class="stats" id="stats3D"></div>
+
+<div id="cubeInputBlock">
+<textarea id="input3D"></textarea>
+</div>
+
+<div id="facesInputBlock" class="hidden">
+Front: <textarea id="faceFront"></textarea><br>
+Back: <textarea id="faceBack"></textarea><br>
+Left: <textarea id="faceLeft"></textarea><br>
+Right: <textarea id="faceRight"></textarea><br>
+Top: <textarea id="faceTop"></textarea><br>
+Bottom: <textarea id="faceBottom"></textarea>
+</div>
 
 Transparency:
 <input type="range" id="opacitySlider" min="0" max="1" step="0.01" value="1">
-
-<div class="stats" id="stats3D"></div>
 
 <div id="threeContainer"></div>
 
@@ -141,10 +195,9 @@ function show2D(){
 document.getElementById("mode2D").classList.remove("hidden");
 document.getElementById("mode3D").classList.add("hidden");
 }
-
 function show3D(){
-document.getElementById("mode2D").classList.add("hidden");
 document.getElementById("mode3D").classList.remove("hidden");
+document.getElementById("mode2D").classList.add("hidden");
 init3D();
 }
 </script>
