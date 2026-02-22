@@ -1,279 +1,302 @@
-// =====================================================
-// Numeral Voxel Engine - GOLD BUILD
-// engine2d.js (NO FLUFF EDITION)
-// ImageData-based high-performance renderer
-// =====================================================
+// ===============================
+// NUMERAL VOXEL ENGINE — 2D CORE
+// ===============================
 
-const Engine2D = (function () {
-    "use strict";
+const canvas = document.getElementById("canvas2D");
+const ctx = canvas.getContext("2d");
+ctx.imageSmoothingEnabled = false;
 
-    // ===============================
-    // STATE
-    // ===============================
+const MAX_2D = 1500;
 
-    const MAX_SIZE = 1500;
+canvas.width = 800;
+canvas.height = 800;
 
-    let canvas;
-    let ctx;
+// ===============================
+// INSTRUCTIONS PANEL
+// ===============================
 
-    let currentFormat = "binary";
-    let currentSize = { x: 2, y: 2 };
+function get2DInstructions(format){
+    const common =
+`2D ENGINE RULES:
 
-    // ===============================
-    // INITIALIZATION
-    // ===============================
+• Size format: X-Y (example: 16-16)
+• Maximum: 1500-1500
+• Values separated by spaces
+• FPS + ms calculated only on Convert
 
-    function init() {
-        canvas = document.getElementById("canvas2D");
-        ctx = canvas.getContext("2d", { willReadFrequently: false });
+`;
 
-        bindUI();
-        resizeCanvas();
+    const map = {
+        binary:
+`BINARY FORMAT:
+Each pixel requires 3 values:
+R G B
+
+Example (red pixel):
+11111111 00000000 00000000
+`,
+
+        decimal:
+`DECIMAL FORMAT:
+Each pixel requires 3 values (0-255):
+R G B
+
+Example:
+255 0 0
+`,
+
+        hex:
+`HEX FORMAT:
+Each pixel requires 3 values (00-FF):
+R G B
+
+Example:
+FF 00 00
+`,
+
+        octal:
+`OCTAL FORMAT:
+Each pixel requires 3 values (000-377):
+R G B
+
+Example:
+377 000 000
+`,
+
+        morse:
+`MORSE FORMAT:
+Each pixel requires 3 Morse byte values.
+
+Dot = .
+Dash = -
+
+Example for 255:
+-------- (8 dashes)
+`,
+
+        color:
+`COLORCODE FORMAT:
+Each pixel requires 1 value:
+
+#RRGGBB
+
+Example:
+#FF0000
+`
+    };
+
+    return common + map[format];
+}
+
+// ===============================
+// SIZE PARSER
+// ===============================
+
+function parseSize2D(){
+    const raw = document.getElementById("size2D").value.trim();
+    const parts = raw.split("-");
+    if(parts.length !== 2) throw "Invalid size format";
+
+    const w = parseInt(parts[0]);
+    const h = parseInt(parts[1]);
+
+    if(isNaN(w) || isNaN(h)) throw "Size must be numbers";
+    if(w <= 0 || h <= 0) throw "Size must be positive";
+    if(w > MAX_2D || h > MAX_2D) throw "Size exceeds 1500-1500";
+
+    return [w,h];
+}
+
+// ===============================
+// VALUE PARSERS
+// ===============================
+
+function parseBinary(v){
+    if(!/^[01]{8}$/.test(v)) throw "Invalid binary byte";
+    return parseInt(v,2);
+}
+
+function parseDecimal(v){
+    const n = parseInt(v);
+    if(isNaN(n) || n<0 || n>255) throw "Invalid decimal byte";
+    return n;
+}
+
+function parseHex(v){
+    if(!/^[0-9A-Fa-f]{2}$/.test(v)) throw "Invalid hex byte";
+    return parseInt(v,16);
+}
+
+function parseOctal(v){
+    if(!/^[0-7]{3}$/.test(v)) throw "Invalid octal byte";
+    return parseInt(v,8);
+}
+
+function parseMorse(v){
+    if(!/^[\.\-]{8}$/.test(v)) throw "Invalid Morse byte";
+    let bin = "";
+    for(let c of v){
+        bin += (c === "-") ? "1" : "0";
     }
+    return parseInt(bin,2);
+}
 
-    function bindUI() {
-        document.getElementById("format2D").addEventListener("change", (e) => {
-            currentFormat = e.target.value;
-        });
+function parseColor(v){
+    if(!/^#[0-9A-Fa-f]{6}$/.test(v)) throw "Invalid color code";
+    return v;
+}
 
-        document.getElementById("convert2DBtn").addEventListener("click", render);
-        document.getElementById("stress2DBtn").addEventListener("click", stress);
-        window.addEventListener("resize", resizeCanvas);
-    }
+// ===============================
+// MAIN RENDER
+// ===============================
 
-    function resizeCanvas() {
-        canvas.style.width = "100%";
-        canvas.style.height = "auto";
-    }
+function render2D(values, w, h, format){
 
-    // ===============================
-    // SIZE PARSER
-    // ===============================
+    const pixelW = canvas.width / w;
+    const pixelH = canvas.height / h;
 
-    function parseSize() {
-        const raw = document.getElementById("size2D").value.trim();
-        const parts = raw.split("-");
+    ctx.clearRect(0,0,canvas.width,canvas.height);
 
-        if (parts.length !== 2) {
-            showError("Size must be X-Y.");
-            return false;
+    let i = 0;
+
+    for(let y=0;y<h;y++){
+        for(let x=0;x<w;x++){
+
+            let color;
+
+            if(format === "color"){
+                color = parseColor(values[i++]);
+            } else {
+                let r,g,b;
+
+                if(format==="binary"){
+                    r=parseBinary(values[i++]);
+                    g=parseBinary(values[i++]);
+                    b=parseBinary(values[i++]);
+                }
+                if(format==="decimal"){
+                    r=parseDecimal(values[i++]);
+                    g=parseDecimal(values[i++]);
+                    b=parseDecimal(values[i++]);
+                }
+                if(format==="hex"){
+                    r=parseHex(values[i++]);
+                    g=parseHex(values[i++]);
+                    b=parseHex(values[i++]);
+                }
+                if(format==="octal"){
+                    r=parseOctal(values[i++]);
+                    g=parseOctal(values[i++]);
+                    b=parseOctal(values[i++]);
+                }
+                if(format==="morse"){
+                    r=parseMorse(values[i++]);
+                    g=parseMorse(values[i++]);
+                    b=parseMorse(values[i++]);
+                }
+
+                color = `rgb(${r},${g},${b})`;
+            }
+
+            ctx.fillStyle = color;
+            ctx.fillRect(x*pixelW, y*pixelH, pixelW, pixelH);
         }
-
-        const x = parseInt(parts[0]);
-        const y = parseInt(parts[1]);
-
-        if (
-            isNaN(x) ||
-            isNaN(y) ||
-            x < 1 ||
-            y < 1 ||
-            x > MAX_SIZE ||
-            y > MAX_SIZE
-        ) {
-            showError("Size must be between 1 and 1500.");
-            return false;
-        }
-
-        currentSize = { x, y };
-        return true;
     }
+}
 
-    // ===============================
-    // FORMAT VALIDATORS
-    // ===============================
+// ===============================
+// CONVERT
+// ===============================
 
-    function validateBinary(v) {
-        return /^[01]{8}$/.test(v);
-    }
+document.getElementById("convert2D").onclick = () => {
 
-    function validateDecimal(v) {
-        const n = Number(v);
-        return Number.isInteger(n) && n >= 0 && n <= 255;
-    }
-
-    function validateHex(v) {
-        return /^[0-9a-fA-F]{1,2}$/.test(v);
-    }
-
-    function validateOctal(v) {
-        if (!/^[0-7]{1,3}$/.test(v)) return false;
-        const n = parseInt(v, 8);
-        return n <= 255;
-    }
-
-    function validateMorse(v) {
-        return /^[\.\-]{8}$/.test(v);
-    }
-
-    function validateColorCode(v) {
-        return /^#([0-9a-fA-F]{6})$/.test(v);
-    }
-
-    // ===============================
-    // PARSERS
-    // ===============================
-
-    function parseByte(token) {
-        switch (currentFormat) {
-            case "binary":
-                if (!validateBinary(token)) return null;
-                return parseInt(token, 2);
-
-            case "decimal":
-                if (!validateDecimal(token)) return null;
-                return parseInt(token, 10);
-
-            case "hex":
-                if (!validateHex(token)) return null;
-                return parseInt(token, 16);
-
-            case "octal":
-                if (!validateOctal(token)) return null;
-                return parseInt(token, 8);
-
-            case "morse":
-                if (!validateMorse(token)) return null;
-                const bin = token.replace(/-/g, "1").replace(/\./g, "0");
-                return parseInt(bin, 2);
-
-            default:
-                return null;
-        }
-    }
-
-    function parseColorCode(token) {
-        if (!validateColorCode(token)) return null;
-        return Utils.hexToRgb(token);
-    }
-
-    // ===============================
-    // STRESS GENERATOR
-    // ===============================
-
-    function stress() {
-        if (!parseSize()) return;
-
-        const total = currentSize.x * currentSize.y;
-        const output = Utils.stressGenerate(currentFormat, total);
-
-        document.getElementById("input2D").value = output;
-    }
-
-    // ===============================
-    // RENDER CORE
-    // ===============================
-
-    function render() {
-        clearError();
-
-        if (!parseSize()) return;
+    try{
 
         const start = performance.now();
 
-        const input = document.getElementById("input2D").value.trim();
-        if (!input) {
-            showError("Input is empty.");
-            return;
+        const format = document.getElementById("format2D").value;
+        const [w,h] = parseSize2D();
+
+        const raw = document.getElementById("input2D").value.trim();
+        const values = raw.split(/\s+/);
+
+        const required = (format==="color") ? w*h : w*h*3;
+
+        if(values.length !== required)
+            throw `Expected ${required} values`;
+
+        render2D(values,w,h,format);
+
+        const end = performance.now();
+        const ms = (end-start).toFixed(2);
+        const fps = (1000/(end-start)).toFixed(2);
+
+        document.getElementById("stats2D").textContent =
+            `${ms} ms | ${fps} FPS`;
+
+    } catch(e){
+        alert("2D ERROR:\n"+e);
+    }
+
+};
+
+// ===============================
+// STRESS MODE
+// ===============================
+
+document.getElementById("stress2D").onclick = () => {
+
+    const format = document.getElementById("format2D").value;
+    const [w,h] = parseSize2D();
+
+    const total = (format==="color") ? w*h : w*h*3;
+
+    let arr = [];
+
+    for(let i=0;i<total;i++){
+
+        if(format==="binary"){
+            arr.push(Math.random()<0.5 ? "00000000" : "11111111");
         }
 
-        const tokens = input.split(/\s+/);
-
-        const expected =
-            currentFormat === "colorcode"
-                ? currentSize.x * currentSize.y
-                : currentSize.x * currentSize.y * 3;
-
-        if (tokens.length !== expected) {
-            showError("Incorrect number of values.");
-            return;
+        if(format==="decimal"){
+            arr.push(Math.floor(Math.random()*256));
         }
 
-        canvas.width = currentSize.x;
-        canvas.height = currentSize.y;
+        if(format==="hex"){
+            arr.push(Math.floor(Math.random()*256)
+                .toString(16).padStart(2,"0").toUpperCase());
+        }
 
-        const imageData = ctx.createImageData(
-            currentSize.x,
-            currentSize.y
-        );
+        if(format==="octal"){
+            arr.push(Math.floor(Math.random()*256)
+                .toString(8).padStart(3,"0"));
+        }
 
-        let t = 0;
-
-        for (let y = 0; y < currentSize.y; y++) {
-            for (let x = 0; x < currentSize.x; x++) {
-
-                let r, g, b;
-
-                if (currentFormat === "colorcode") {
-                    const rgb = parseColorCode(tokens[t++]);
-                    if (!rgb) {
-                        showError("Invalid color code detected.");
-                        return;
-                    }
-                    r = rgb.r;
-                    g = rgb.g;
-                    b = rgb.b;
-                } else {
-                    r = parseByte(tokens[t++]);
-                    g = parseByte(tokens[t++]);
-                    b = parseByte(tokens[t++]);
-
-                    if (r === null || g === null || b === null) {
-                        showError("Invalid numeric value detected.");
-                        return;
-                    }
-                }
-
-                const index = (y * currentSize.x + x) * 4;
-
-                imageData.data[index] = r;
-                imageData.data[index + 1] = g;
-                imageData.data[index + 2] = b;
-                imageData.data[index + 3] = 255;
+        if(format==="morse"){
+            let v="";
+            for(let b=0;b<8;b++){
+                v+=Math.random()<0.5?".":"-";
             }
+            arr.push(v);
         }
 
-        ctx.putImageData(imageData, 0, 0);
-
-        updateStats(start);
+        if(format==="color"){
+            arr.push("#"+Math.floor(Math.random()*16777215)
+                .toString(16).padStart(6,"0"));
+        }
     }
 
-    // ===============================
-    // STATS
-    // ===============================
-
-    function updateStats(start) {
-        const stats = Utils.calculateStats(start);
-
-        document.getElementById("ms2D").textContent = stats.ms;
-        document.getElementById("fps2D").textContent = stats.fps;
-    }
-
-    // ===============================
-    // ERROR HANDLING
-    // ===============================
-
-    function showError(msg) {
-        console.warn(msg);
-    }
-
-    function clearError() {
-        // Reserved for UI integration
-    }
-
-    // ===============================
-    // PUBLIC API
-    // ===============================
-
-    return {
-        init
-    };
-
-})();
+    document.getElementById("input2D").value = arr.join(" ");
+};
 
 // ===============================
-// BOOTSTRAP
+// DOWNLOAD
 // ===============================
 
-document.addEventListener("DOMContentLoaded", () => {
-    Engine2D.init();
-});
+document.getElementById("download2D").onclick = () => {
+    const link = document.createElement("a");
+    link.download = "numeral_render.png";
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+};
