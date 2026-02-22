@@ -4,144 +4,158 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Numeral Voxel Engine</title>
-
 <link rel="stylesheet" href="css/style.css">
-
 </head>
 <body>
 
-<header>
-    <h1>Numeral Voxel Engine</h1>
+<h1>Numeral Voxel Engine</h1>
 
-    <div class="engine-switch">
-        <button id="switch2D" class="active">2D Engine</button>
-        <button id="switch3D">3D Engine</button>
-    </div>
-</header>
+<div class="engine-switch">
+    <button id="btn2D" class="active">2D Engine</button>
+    <button id="btn3D">3D Engine</button>
+</div>
 
-<!-- ========================================================= -->
-<!-- 2D SECTION -->
-<!-- ========================================================= -->
+<!-- ===================================================== -->
+<!-- ===================== INSTRUCTIONS ================== -->
+<!-- ===================================================== -->
+
+<div class="instructions">
+<h2>Global Rules</h2>
+<ul>
+<li>2D Maximum: 1500-1500</li>
+<li>3D Cube Mode: Max 10-10-10</li>
+<li>3D Faces Mode: Max 25-25-25</li>
+<li>Binary / Decimal / Hex / Octal / Morse → 3 values per pixel (R G B)</li>
+<li>ColorCode → 1 value per pixel (#RRGGBB)</li>
+<li>FPS + ms calculated only during Convert</li>
+</ul>
+</div>
+
+<!-- ===================================================== -->
+<!-- ======================== 2D ========================== -->
+<!-- ===================================================== -->
 
 <section id="section2D">
 
-    <h2>2D Image Renderer</h2>
+<h2>2D Image Renderer</h2>
 
-    <div class="controls">
-        <label>Size (X-Y)</label>
-        <input id="size2D" value="4-4">
+<div class="controls">
+<label>Size (X-Y)</label>
+<input id="size2D" value="4-4">
 
-        <label>Format</label>
-        <select id="format2D">
-            <option value="binary">Binary</option>
-            <option value="decimal">Decimal</option>
-            <option value="hex">Hex</option>
-            <option value="octal">Octal</option>
-            <option value="morse">Morse</option>
-            <option value="colorcode">Color Code</option>
-        </select>
+<label>Format</label>
+<select id="format2D">
+<option value="binary">Binary</option>
+<option value="decimal">Decimal</option>
+<option value="hex">Hex</option>
+<option value="octal">Octal</option>
+<option value="morse">Morse</option>
+<option value="color">ColorCode</option>
+</select>
+</div>
 
-        <button id="convert2DBtn">Convert</button>
-        <button id="stress2DBtn">Stress Test Mode</button>
-    </div>
+<div class="buttons">
+<button id="convert2D">Convert</button>
+<button id="stress2D">Stress Test</button>
+<button id="download2D">Download PNG</button>
+</div>
 
-    <div id="warning2D" class="warning"></div>
+<div id="stats2D" class="stats">0 ms | 0 FPS</div>
 
-    <textarea id="input2D" placeholder="Enter values separated by spaces..."></textarea>
+<textarea id="input2D" placeholder="Enter values separated by spaces..."></textarea>
 
-    <div class="stats">
-        <span id="ms2D">0 ms</span>
-        <span id="fps2D">0</span>
-    </div>
-
-    <canvas id="canvas2D"></canvas>
+<canvas id="canvas2D"></canvas>
 
 </section>
 
-<!-- ========================================================= -->
-<!-- 3D SECTION -->
-<!-- ========================================================= -->
+<!-- ===================================================== -->
+<!-- ======================== 3D ========================== -->
+<!-- ===================================================== -->
 
 <section id="section3D" style="display:none;">
 
-    <h2>3D Voxel Engine</h2>
+<h2>3D Voxel Engine</h2>
 
-    <div class="controls">
-        <label>Size (X-Y-Z)</label>
-        <input id="size3D" value="2-2-2">
+<div class="controls">
+<label>Size (X-Y-Z)</label>
+<input id="size3D" value="2-2-2">
 
-        <label>Format</label>
-        <select id="format3D">
-            <option value="binary">Binary</option>
-            <option value="decimal">Decimal</option>
-            <option value="hex">Hex</option>
-            <option value="octal">Octal</option>
-            <option value="morse">Morse</option>
-            <option value="colorcode">Color Code</option>
-        </select>
+<label>Format</label>
+<select id="format3D">
+<option value="binary">Binary</option>
+<option value="decimal">Decimal</option>
+<option value="hex">Hex</option>
+<option value="octal">Octal</option>
+<option value="morse">Morse</option>
+<option value="color">ColorCode</option>
+</select>
 
-        <label>Transparency</label>
-        <input id="transparency3D" type="range" min="0" max="1" step="0.05" value="1">
-    </div>
+<label>Transparency</label>
+<input type="range" id="alpha3D" min="0.1" max="1" step="0.05" value="1">
+</div>
 
-    <div class="mode-switch">
-        <button id="editCubeBtn" class="active">Edit Cube</button>
-        <button id="editFacesBtn">Edit All 6 Faces</button>
-    </div>
+<div class="mode-switch">
+<button id="modeCube" class="active">Edit Cube</button>
+<button id="modeFaces">Edit Faces</button>
+</div>
 
-    <!-- Cube Panel -->
-    <div id="cubePanel">
-        <textarea id="input3D" placeholder="Enter voxel data..."></textarea>
-    </div>
+<!-- Cube Input -->
+<textarea id="input3D" placeholder="Enter voxel data..."></textarea>
 
-    <!-- Faces Panel -->
-    <div id="facesPanel" style="display:none;">
+<!-- Faces Input -->
+<div id="facesBlock" style="display:none;">
+<h3>Front</h3>
+<textarea id="faceFront"></textarea>
 
-        <h3>Front</h3>
-        <textarea id="faceFront"></textarea>
+<h3>Back</h3>
+<textarea id="faceBack"></textarea>
 
-        <h3>Back</h3>
-        <textarea id="faceBack"></textarea>
+<h3>Left</h3>
+<textarea id="faceLeft"></textarea>
 
-        <h3>Left</h3>
-        <textarea id="faceLeft"></textarea>
+<h3>Right</h3>
+<textarea id="faceRight"></textarea>
 
-        <h3>Right</h3>
-        <textarea id="faceRight"></textarea>
+<h3>Top</h3>
+<textarea id="faceTop"></textarea>
 
-        <h3>Top</h3>
-        <textarea id="faceTop"></textarea>
+<h3>Bottom</h3>
+<textarea id="faceBottom"></textarea>
+</div>
 
-        <h3>Bottom</h3>
-        <textarea id="faceBottom"></textarea>
+<div class="buttons">
+<button id="convert3D">Convert</button>
+<button id="stress3D">Stress Test</button>
+</div>
 
-    </div>
+<div id="stats3D" class="stats">0 ms | 0 FPS</div>
 
-    <div class="controls">
-        <button id="convert3DBtn">Convert</button>
-        <button id="stress3DBtn">Stress Test Mode</button>
-    </div>
-
-    <div id="warning3D" class="warning"></div>
-
-    <div class="stats">
-        <span id="ms3D">0 ms</span>
-        <span id="fps3D">0</span>
-    </div>
-
-    <div id="threeContainer"></div>
+<div id="threeContainer"></div>
 
 </section>
 
-<!-- ========================================================= -->
-<!-- SCRIPTS -->
-<!-- ========================================================= -->
+<!-- ===================================================== -->
+<!-- ===================== SCRIPTS ======================== -->
+<!-- ===================================================== -->
 
 <script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
-<script src="js/utils.js"></script>
 <script src="js/engine2d.js"></script>
 <script src="js/engine3d.js"></script>
-<script src="js/app.js"></script>
+
+<script>
+const section2D = document.getElementById("section2D");
+const section3D = document.getElementById("section3D");
+
+document.getElementById("btn2D").onclick = () => {
+    section2D.style.display = "block";
+    section3D.style.display = "none";
+};
+
+document.getElementById("btn3D").onclick = () => {
+    section2D.style.display = "none";
+    section3D.style.display = "block";
+};
+</script>
 
 </body>
 </html>
