@@ -72,33 +72,46 @@
 <!-- ======================== 3D ========================== -->
 <!-- ===================================================== -->
 
-<section id="section3D" style="display:none;">
+<section id="engine3DSection">
 
 <h2>3D Voxel Engine</h2>
 
-<div class="controls">
 <label>Size (X-Y-Z)</label>
-<input id="size3D" value="2-2-2">
+<input type="text" id="size3D" value="2-2-2">
 
 <label>Format</label>
 <select id="format3D">
-<option value="binary">Binary</option>
-<option value="decimal">Decimal</option>
-<option value="hex">Hex</option>
-<option value="octal">Octal</option>
-<option value="morse">Morse</option>
-<option value="color">ColorCode</option>
+  <option value="binary">Binary</option>
+  <option value="decimal">Decimal</option>
+  <option value="hex">Hex</option>
+  <option value="octal">Octal</option>
+  <option value="morse">Morse</option>
+  <option value="color">ColorCode (#RRGGBB)</option>
 </select>
 
 <label>Transparency</label>
-<input type="range" id="alpha3D" min="0.1" max="1" step="0.05" value="1">
+<input type="range" id="alpha3D" min="0" max="1" step="0.01" value="1">
+
+<label>Glossiness</label>
+<input type="range" id="gloss3D" min="0" max="200" step="1" value="30">
+
+<div class="buttonRow">
+  <button id="editCubeBtn">Edit Cube</button>
+  <button id="editFacesBtn">Edit Faces</button>
 </div>
 
-<div class="mode-switch">
-<button id="modeCube" class="active">Edit Cube</button>
-<button id="modeFaces">Edit Faces</button>
+<textarea id="input3D" placeholder="Enter voxel data..."></textarea>
+
+<div class="buttonRow">
+  <button id="convert3D">Convert</button>
+  <button id="stress3D">Stress Test</button>
 </div>
 
+<div id="stats3D">0 ms | 0 FPS</div>
+
+<div id="threeContainer" style="width:100%; height:500px;"></div>
+
+</section>
 <!-- Cube Input -->
 <textarea id="input3D" placeholder="Enter voxel data..."></textarea>
 
