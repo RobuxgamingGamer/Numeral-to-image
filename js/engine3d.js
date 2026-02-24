@@ -1,21 +1,27 @@
-// ============================================
-// NUMERAL VOXEL ENGINE — 3D CORE
-// ============================================
+// ========================================================
+// NUMERAL VOXEL ENGINE — 3D ADVANCED CORE
+// ========================================================
 
-const MAX_CUBE = 10;      // solid mode
-const MAX_FACES = 25;     // hollow faces mode
+const MAX_CUBE = 10;
+const MAX_FACES = 25;
 
 let scene, camera, renderer;
-let container = document.getElementById("threeContainer");
 let voxelGroup = new THREE.Group();
+let container = document.getElementById("threeContainer");
+
 let currentMode = "cube";
+let isDragging = false;
+let previousTouchDistance = null;
+
+let rotationX = 0;
+let rotationY = 0;
 
 initThree();
 animate();
 
-// ============================================
+// ========================================================
 // INITIALIZE THREE
-// ============================================
+// ========================================================
 
 function initThree() {
 
@@ -28,107 +34,101 @@ function initThree() {
         0.1,
         1000
     );
-    camera.position.set(15, 15, 15);
-    camera.lookAt(0, 0, 0);
 
-    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    camera.position.set(15, 15, 15);
+
+    renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(container.clientWidth, 500);
     container.appendChild(renderer.domElement);
 
     const light = new THREE.DirectionalLight(0xffffff, 1);
-    light.position.set(10, 20, 10);
+    light.position.set(20, 30, 20);
     scene.add(light);
 
-    const ambient = new THREE.AmbientLight(0xffffff, 0.4);
+    const ambient = new THREE.AmbientLight(0xffffff, 0.3);
     scene.add(ambient);
 
     scene.add(voxelGroup);
 
-    window.addEventListener("resize", () => {
-        renderer.setSize(container.clientWidth, 500);
-        camera.aspect = container.clientWidth / 500;
-        camera.updateProjectionMatrix();
+    enableCameraControls();
+}
+
+// ========================================================
+// CAMERA CONTROLS (Swipe + Zoom)
+// ========================================================
+
+function enableCameraControls() {
+
+    renderer.domElement.addEventListener("mousedown", () => isDragging = true);
+    renderer.domElement.addEventListener("mouseup", () => isDragging = false);
+    renderer.domElement.addEventListener("mouseleave", () => isDragging = false);
+
+    renderer.domElement.addEventListener("mousemove", (e) => {
+        if (!isDragging) return;
+        rotationY += e.movementX * 0.01;
+        rotationX += e.movementY * 0.01;
+    });
+
+    // Scroll zoom
+    renderer.domElement.addEventListener("wheel", (e) => {
+        camera.position.multiplyScalar(e.deltaY > 0 ? 1.1 : 0.9);
+    });
+
+    // Touch controls
+    renderer.domElement.addEventListener("touchstart", (e) => {
+        if (e.touches.length === 1) {
+            isDragging = true;
+        }
+        if (e.touches.length === 2) {
+            previousTouchDistance = getTouchDistance(e);
+        }
+    });
+
+    renderer.domElement.addEventListener("touchmove", (e) => {
+
+        if (e.touches.length === 1 && isDragging) {
+            rotationY += e.touches[0].movementX * 0.01;
+            rotationX += e.touches[0].movementY * 0.01;
+        }
+
+        if (e.touches.length === 2) {
+            const newDist = getTouchDistance(e);
+            if (previousTouchDistance) {
+                const scale = newDist / previousTouchDistance;
+                camera.position.multiplyScalar(scale < 1 ? 1.05 : 0.95);
+            }
+            previousTouchDistance = newDist;
+        }
+    });
+
+    renderer.domElement.addEventListener("touchend", () => {
+        isDragging = false;
+        previousTouchDistance = null;
     });
 }
 
+function getTouchDistance(e) {
+    const dx = e.touches[0].clientX - e.touches[1].clientX;
+    const dy = e.touches[0].clientY - e.touches[1].clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+}
+
+// ========================================================
+// ANIMATION LOOP
+// ========================================================
+
 function animate() {
     requestAnimationFrame(animate);
-    voxelGroup.rotation.y += 0.005;
+
+    voxelGroup.rotation.x = rotationX;
+    voxelGroup.rotation.y = rotationY;
+
     renderer.render(scene, camera);
 }
 
-// ============================================
-// SIZE PARSER
-// ============================================
-
-function parseSize3D() {
-    const raw = document.getElementById("size3D").value.trim();
-    const parts = raw.split("-");
-    if (parts.length !== 3) throw "Invalid size format";
-
-    const x = parseInt(parts[0]);
-    const y = parseInt(parts[1]);
-    const z = parseInt(parts[2]);
-
-    if (isNaN(x) || isNaN(y) || isNaN(z))
-        throw "Size must be numbers";
-
-    if (x <= 0 || y <= 0 || z <= 0)
-        throw "Size must be positive";
-
-    if (currentMode === "cube") {
-        if (x > MAX_CUBE || y > MAX_CUBE || z > MAX_CUBE)
-            throw "Cube mode max 10-10-10";
-    }
-
-    if (currentMode === "faces") {
-        if (x > MAX_FACES || y > MAX_FACES || z > MAX_FACES)
-            throw "Faces mode max 25-25-25";
-    }
-
-    return [x, y, z];
-}
-
-// ============================================
-// BYTE PARSERS
-// ============================================
-
-function parseBinary(v) {
-    if (!/^[01]{8}$/.test(v)) throw "Invalid binary byte";
-    return parseInt(v, 2);
-}
-
-function parseDecimal(v) {
-    const n = parseInt(v);
-    if (isNaN(n) || n < 0 || n > 255) throw "Invalid decimal byte";
-    return n;
-}
-
-function parseHex(v) {
-    if (!/^[0-9A-Fa-f]{2}$/.test(v)) throw "Invalid hex byte";
-    return parseInt(v, 16);
-}
-
-function parseOctal(v) {
-    if (!/^[0-7]{3}$/.test(v)) throw "Invalid octal byte";
-    return parseInt(v, 8);
-}
-
-function parseMorse(v) {
-    if (!/^[\.\-]{8}$/.test(v)) throw "Invalid Morse byte";
-    let bin = "";
-    for (let c of v) bin += (c === "-") ? "1" : "0";
-    return parseInt(bin, 2);
-}
-
-function parseColor(v) {
-    if (!/^#[0-9A-Fa-f]{6}$/.test(v)) throw "Invalid color";
-    return v;
-}
-
-// ============================================
+// ========================================================
 // CLEAR VOXELS
-// ============================================
+// ========================================================
 
 function clearVoxels() {
     while (voxelGroup.children.length > 0) {
@@ -136,14 +136,41 @@ function clearVoxels() {
     }
 }
 
-// ============================================
+// ========================================================
+// PARSERS (ALL FORMATS)
+// ========================================================
+
+function parseByte(value, format) {
+
+    if (format === "binary")
+        return parseInt(value, 2);
+
+    if (format === "decimal")
+        return parseInt(value);
+
+    if (format === "hex")
+        return parseInt(value, 16);
+
+    if (format === "octal")
+        return parseInt(value, 8);
+
+    if (format === "morse") {
+        let bin = "";
+        for (let c of value)
+            bin += (c === "-") ? "1" : "0";
+        return parseInt(bin, 2);
+    }
+}
+
+// ========================================================
 // BUILD SOLID CUBE
-// ============================================
+// ========================================================
 
 function buildCube(values, format, x, y, z) {
 
     let index = 0;
     const alpha = parseFloat(document.getElementById("alpha3D").value);
+    const gloss = parseInt(document.getElementById("gloss3D").value);
 
     for (let i = 0; i < x; i++) {
         for (let j = 0; j < y; j++) {
@@ -152,44 +179,22 @@ function buildCube(values, format, x, y, z) {
                 let color;
 
                 if (format === "color") {
-                    color = parseColor(values[index++]);
+                    color = values[index++];
                 } else {
-                    let r, g, b;
-
-                    if (format === "binary") {
-                        r = parseBinary(values[index++]);
-                        g = parseBinary(values[index++]);
-                        b = parseBinary(values[index++]);
-                    }
-                    if (format === "decimal") {
-                        r = parseDecimal(values[index++]);
-                        g = parseDecimal(values[index++]);
-                        b = parseDecimal(values[index++]);
-                    }
-                    if (format === "hex") {
-                        r = parseHex(values[index++]);
-                        g = parseHex(values[index++]);
-                        b = parseHex(values[index++]);
-                    }
-                    if (format === "octal") {
-                        r = parseOctal(values[index++]);
-                        g = parseOctal(values[index++]);
-                        b = parseOctal(values[index++]);
-                    }
-                    if (format === "morse") {
-                        r = parseMorse(values[index++]);
-                        g = parseMorse(values[index++]);
-                        b = parseMorse(values[index++]);
-                    }
-
+                    const r = parseByte(values[index++], format);
+                    const g = parseByte(values[index++], format);
+                    const b = parseByte(values[index++], format);
                     color = `rgb(${r},${g},${b})`;
                 }
 
                 const geometry = new THREE.BoxGeometry(1, 1, 1);
+
                 const material = new THREE.MeshPhongMaterial({
                     color: color,
-                    transparent: true,
-                    opacity: alpha
+                    shininess: gloss,
+                    transparent: alpha < 1,
+                    opacity: alpha,
+                    depthWrite: alpha === 1
                 });
 
                 const cube = new THREE.Mesh(geometry, material);
@@ -205,138 +210,62 @@ function buildCube(values, format, x, y, z) {
     }
 }
 
-// ============================================
-// BUILD FACES (HOLLOW)
-// ============================================
-
-function buildFaces(values, format, x, y, z) {
-
-    let index = 0;
-    const alpha = parseFloat(document.getElementById("alpha3D").value);
-
-    function addVoxel(i, j, k, color) {
-
-        const geometry = new THREE.BoxGeometry(1, 1, 1);
-        const material = new THREE.MeshPhongMaterial({
-            color: color,
-            transparent: true,
-            opacity: alpha
-        });
-
-        const cube = new THREE.Mesh(geometry, material);
-        cube.position.set(
-            i - x / 2,
-            j - y / 2,
-            k - z / 2
-        );
-
-        voxelGroup.add(cube);
-    }
-
-    const faces = [
-        "faceFront",
-        "faceBack",
-        "faceLeft",
-        "faceRight",
-        "faceTop",
-        "faceBottom"
-    ];
-
-    for (let face of faces) {
-
-        const raw = document.getElementById(face).value.trim();
-        if (!raw) continue;
-
-        const values = raw.split(/\s+/);
-        let idx = 0;
-
-        for (let i = 0; i < x; i++) {
-            for (let j = 0; j < y; j++) {
-
-                let color;
-
-                if (format === "color") {
-                    color = parseColor(values[idx++]);
-                } else {
-                    let r, g, b;
-
-                    r = parseDecimal(values[idx++]);
-                    g = parseDecimal(values[idx++]);
-                    b = parseDecimal(values[idx++]);
-                    color = `rgb(${r},${g},${b})`;
-                }
-
-                if (face === "faceFront") addVoxel(i, j, z - 1, color);
-                if (face === "faceBack") addVoxel(i, j, 0, color);
-                if (face === "faceLeft") addVoxel(0, i, j, color);
-                if (face === "faceRight") addVoxel(x - 1, i, j, color);
-                if (face === "faceTop") addVoxel(i, y - 1, j, color);
-                if (face === "faceBottom") addVoxel(i, 0, j, color);
-            }
-        }
-    }
-}
-
-// ============================================
+// ========================================================
 // CONVERT
-// ============================================
+// ========================================================
 
 document.getElementById("convert3D").onclick = () => {
 
-    try {
+    const start = performance.now();
 
-        const start = performance.now();
+    clearVoxels();
 
-        clearVoxels();
+    const format = document.getElementById("format3D").value;
+    const size = document.getElementById("size3D").value.split("-");
+    const x = parseInt(size[0]);
+    const y = parseInt(size[1]);
+    const z = parseInt(size[2]);
 
-        const format = document.getElementById("format3D").value;
-        const [x, y, z] = parseSize3D();
+    const raw = document.getElementById("input3D").value.trim();
+    const values = raw.split(/\s+/);
 
-        if (currentMode === "cube") {
+    buildCube(values, format, x, y, z);
 
-            const raw = document.getElementById("input3D").value.trim();
-            const values = raw.split(/\s+/);
+    const end = performance.now();
+    const ms = (end - start).toFixed(2);
+    const fps = (1000 / (end - start)).toFixed(2);
 
-            const required = (format === "color")
-                ? x * y * z
-                : x * y * z * 3;
+    document.getElementById("stats3D").textContent =
+        `${ms} ms | ${fps} FPS`;
+};
 
-            if (values.length !== required)
-                throw `Expected ${required} values`;
+// ========================================================
+// STRESS MODE
+// ========================================================
 
-            buildCube(values, format, x, y, z);
+document.getElementById("stress3D").onclick = () => {
+
+    const format = document.getElementById("format3D").value;
+    const size = document.getElementById("size3D").value.split("-");
+    const x = parseInt(size[0]);
+    const y = parseInt(size[1]);
+    const z = parseInt(size[2]);
+
+    const total = format === "color"
+        ? x * y * z
+        : x * y * z * 3;
+
+    let arr = [];
+
+    for (let i = 0; i < total; i++) {
+
+        if (format === "color") {
+            arr.push("#" + Math.floor(Math.random() * 16777215)
+                .toString(16).padStart(6, "0"));
+        } else {
+            arr.push(Math.floor(Math.random() * 256).toString());
         }
-
-        if (currentMode === "faces") {
-            buildFaces([], format, x, y, z);
-        }
-
-        const end = performance.now();
-        const ms = (end - start).toFixed(2);
-        const fps = (1000 / (end - start)).toFixed(2);
-
-        document.getElementById("stats3D").textContent =
-            `${ms} ms | ${fps} FPS`;
-
-    } catch (e) {
-        alert("3D ERROR:\n" + e);
     }
-};
 
-// ============================================
-// MODE SWITCH
-// ============================================
-
-document.getElementById("modeCube").onclick = () => {
-    currentMode = "cube";
-    document.getElementById("facesBlock").style.display = "none";
-    document.getElementById("modeCube").classList.add("active");
-    document.getElementById("modeFaces").classList.remove("active");
-};
-
-document.getElementById("modeFaces").onclick = () => {
-    currentMode = "faces";
-    document.getElementById("facesBlock").style.display = "block";
-    document.getElementById("modeCube").classList.remove("active");
-    document.getElementById("modeFaces").classList.add("active");
+    document.getElementById("input3D").value = arr.join(" ");
 };
