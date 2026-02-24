@@ -12,8 +12,8 @@
 <h1 class="title">Numeral Voxel Engine</h1>
 
 <div class="mode-switch">
-  <button id="mode2D">2D Engine</button>
-  <button id="mode3D">3D Engine</button>
+  <button id="switch2D">Engine</button>
+  <button id="switch3D">3D Engine</button>
 </div>
 
 <div class="rules">
@@ -28,7 +28,7 @@
 
 <!-- ================= 2D ================= -->
 
-<section id="engine2D">
+<section id="section2D">
 
 <h2>2D Image Renderer</h2>
 
@@ -61,7 +61,7 @@
 
 <!-- ================= 3D ================= -->
 
-<section id="engine3D" style="display:none;">
+<section id="section3D" style="display:none;">
 
 <h2>3D Voxel Engine</h2>
 
@@ -89,7 +89,7 @@
   <button id="editFacesBtn">Edit 6 Faces</button>
 </div>
 
-<div id="facesUI" style="display:none;">
+<div id="facesPanel" style="display:none;">
 
   <h4>Front</h4>
   <textarea id="faceFront"></textarea>
@@ -111,7 +111,9 @@
 
 </div>
 
+<div id="cubePanel">
 <textarea id="input3D" placeholder="Enter voxel data..."></textarea>
+</div>
 
 <div class="button-row">
   <button id="convert3D">Convert</button>
