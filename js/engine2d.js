@@ -1,302 +1,198 @@
-// ===============================
+// ======================================================
 // NUMERAL VOXEL ENGINE — 2D CORE
-// ===============================
+// Pure rendering engine (no UI control)
+// ======================================================
 
-const canvas = document.getElementById("canvas2D");
-const ctx = canvas.getContext("2d");
-ctx.imageSmoothingEnabled = false;
+"use strict";
 
-const MAX_2D = 1500;
+const Engine2D = (function () {
 
-canvas.width = 800;
-canvas.height = 800;
+    let canvas, ctx;
 
-// ===============================
-// INSTRUCTIONS PANEL
-// ===============================
-
-function get2DInstructions(format){
-    const common =
-`2D ENGINE RULES:
-
-• Size format: X-Y (example: 16-16)
-• Maximum: 1500-1500
-• Values separated by spaces
-• FPS + ms calculated only on Convert
-
-`;
-
-    const map = {
-        binary:
-`BINARY FORMAT:
-Each pixel requires 3 values:
-R G B
-
-Example (red pixel):
-11111111 00000000 00000000
-`,
-
-        decimal:
-`DECIMAL FORMAT:
-Each pixel requires 3 values (0-255):
-R G B
-
-Example:
-255 0 0
-`,
-
-        hex:
-`HEX FORMAT:
-Each pixel requires 3 values (00-FF):
-R G B
-
-Example:
-FF 00 00
-`,
-
-        octal:
-`OCTAL FORMAT:
-Each pixel requires 3 values (000-377):
-R G B
-
-Example:
-377 000 000
-`,
-
-        morse:
-`MORSE FORMAT:
-Each pixel requires 3 Morse byte values.
-
-Dot = .
-Dash = -
-
-Example for 255:
--------- (8 dashes)
-`,
-
-        color:
-`COLORCODE FORMAT:
-Each pixel requires 1 value:
-
-#RRGGBB
-
-Example:
-#FF0000
-`
-    };
-
-    return common + map[format];
-}
-
-// ===============================
-// SIZE PARSER
-// ===============================
-
-function parseSize2D(){
-    const raw = document.getElementById("size2D").value.trim();
-    const parts = raw.split("-");
-    if(parts.length !== 2) throw "Invalid size format";
-
-    const w = parseInt(parts[0]);
-    const h = parseInt(parts[1]);
-
-    if(isNaN(w) || isNaN(h)) throw "Size must be numbers";
-    if(w <= 0 || h <= 0) throw "Size must be positive";
-    if(w > MAX_2D || h > MAX_2D) throw "Size exceeds 1500-1500";
-
-    return [w,h];
-}
-
-// ===============================
-// VALUE PARSERS
-// ===============================
-
-function parseBinary(v){
-    if(!/^[01]{8}$/.test(v)) throw "Invalid binary byte";
-    return parseInt(v,2);
-}
-
-function parseDecimal(v){
-    const n = parseInt(v);
-    if(isNaN(n) || n<0 || n>255) throw "Invalid decimal byte";
-    return n;
-}
-
-function parseHex(v){
-    if(!/^[0-9A-Fa-f]{2}$/.test(v)) throw "Invalid hex byte";
-    return parseInt(v,16);
-}
-
-function parseOctal(v){
-    if(!/^[0-7]{3}$/.test(v)) throw "Invalid octal byte";
-    return parseInt(v,8);
-}
-
-function parseMorse(v){
-    if(!/^[\.\-]{8}$/.test(v)) throw "Invalid Morse byte";
-    let bin = "";
-    for(let c of v){
-        bin += (c === "-") ? "1" : "0";
+    function init(canvasId) {
+        canvas = document.getElementById(canvasId);
+        ctx = canvas.getContext("2d");
+        ctx.imageSmoothingEnabled = false;
     }
-    return parseInt(bin,2);
-}
 
-function parseColor(v){
-    if(!/^#[0-9A-Fa-f]{6}$/.test(v)) throw "Invalid color code";
-    return v;
-}
+    // ==================================================
+    // FORMAT PARSER
+    // ==================================================
 
-// ===============================
-// MAIN RENDER
-// ===============================
+    function parseByte(value, format) {
 
-function render2D(values, w, h, format){
-
-    const pixelW = canvas.width / w;
-    const pixelH = canvas.height / h;
-
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-
-    let i = 0;
-
-    for(let y=0;y<h;y++){
-        for(let x=0;x<w;x++){
-
-            let color;
-
-            if(format === "color"){
-                color = parseColor(values[i++]);
-            } else {
-                let r,g,b;
-
-                if(format==="binary"){
-                    r=parseBinary(values[i++]);
-                    g=parseBinary(values[i++]);
-                    b=parseBinary(values[i++]);
-                }
-                if(format==="decimal"){
-                    r=parseDecimal(values[i++]);
-                    g=parseDecimal(values[i++]);
-                    b=parseDecimal(values[i++]);
-                }
-                if(format==="hex"){
-                    r=parseHex(values[i++]);
-                    g=parseHex(values[i++]);
-                    b=parseHex(values[i++]);
-                }
-                if(format==="octal"){
-                    r=parseOctal(values[i++]);
-                    g=parseOctal(values[i++]);
-                    b=parseOctal(values[i++]);
-                }
-                if(format==="morse"){
-                    r=parseMorse(values[i++]);
-                    g=parseMorse(values[i++]);
-                    b=parseMorse(values[i++]);
-                }
-
-                color = `rgb(${r},${g},${b})`;
-            }
-
-            ctx.fillStyle = color;
-            ctx.fillRect(x*pixelW, y*pixelH, pixelW, pixelH);
+        if (format === "binary") {
+            if (!/^[01]{8}$/.test(value)) return null;
+            return parseInt(value, 2);
         }
+
+        if (format === "decimal") {
+            const n = parseInt(value);
+            return (n >= 0 && n <= 255) ? n : null;
+        }
+
+        if (format === "hex") {
+            if (!/^[0-9a-fA-F]{1,2}$/.test(value)) return null;
+            return parseInt(value, 16);
+        }
+
+        if (format === "octal") {
+            if (!/^[0-7]{1,3}$/.test(value)) return null;
+            const n = parseInt(value, 8);
+            return (n <= 255) ? n : null;
+        }
+
+        if (format === "morse") {
+            if (!/^[\.\-]{8}$/.test(value)) return null;
+            const bin = value.replace(/-/g, "1").replace(/\./g, "0");
+            return parseInt(bin, 2);
+        }
+
+        return null;
     }
-}
 
-// ===============================
-// CONVERT
-// ===============================
+    // ==================================================
+    // RENDER
+    // ==================================================
 
-document.getElementById("convert2D").onclick = () => {
-
-    try{
+    function render(sizeStr, format, inputStr) {
 
         const start = performance.now();
 
-        const format = document.getElementById("format2D").value;
-        const [w,h] = parseSize2D();
+        const parts = sizeStr.split("-");
+        const width = parseInt(parts[0]);
+        const height = parseInt(parts[1]);
 
-        const raw = document.getElementById("input2D").value.trim();
-        const values = raw.split(/\s+/);
+        canvas.width = width;
+        canvas.height = height;
 
-        const required = (format==="color") ? w*h : w*h*3;
+        const imgData = ctx.createImageData(width, height);
+        const values = inputStr.trim().split(/\s+/);
 
-        if(values.length !== required)
-            throw `Expected ${required} values`;
+        const totalPixels = width * height;
 
-        render2D(values,w,h,format);
+        if (format === "color") {
+            if (values.length !== totalPixels) {
+                throw new Error("Incorrect number of color codes.");
+            }
+        } else {
+            if (values.length !== totalPixels * 3) {
+                throw new Error("Incorrect number of values.");
+            }
+        }
+
+        for (let i = 0; i < totalPixels; i++) {
+
+            let r, g, b;
+
+            if (format === "color") {
+                const hex = values[i].replace("#", "");
+                if (hex.length !== 6) {
+                    throw new Error("Invalid color code.");
+                }
+                r = parseInt(hex.substring(0, 2), 16);
+                g = parseInt(hex.substring(2, 4), 16);
+                b = parseInt(hex.substring(4, 6), 16);
+            } else {
+                r = parseByte(values[i * 3], format);
+                g = parseByte(values[i * 3 + 1], format);
+                b = parseByte(values[i * 3 + 2], format);
+
+                if (r === null || g === null || b === null) {
+                    throw new Error("Invalid numeric value detected.");
+                }
+            }
+
+            imgData.data[i * 4] = r;
+            imgData.data[i * 4 + 1] = g;
+            imgData.data[i * 4 + 2] = b;
+            imgData.data[i * 4 + 3] = 255;
+        }
+
+        ctx.putImageData(imgData, 0, 0);
+
+        const scale = Math.min(500 / width, 500 / height);
+        canvas.style.width = (width * scale) + "px";
+        canvas.style.height = (height * scale) + "px";
 
         const end = performance.now();
-        const ms = (end-start).toFixed(2);
-        const fps = (1000/(end-start)).toFixed(2);
+        const delta = end - start || 0.0001;
 
-        document.getElementById("stats2D").textContent =
-            `${ms} ms | ${fps} FPS`;
-
-    } catch(e){
-        alert("2D ERROR:\n"+e);
+        return {
+            ms: delta.toFixed(2),
+            fps: (1000 / delta).toFixed(2)
+        };
     }
 
-};
+    // ==================================================
+    // STRESS
+    // ==================================================
 
-// ===============================
-// STRESS MODE
-// ===============================
+    function stress(sizeStr, format) {
 
-document.getElementById("stress2D").onclick = () => {
+        const parts = sizeStr.split("-");
+        const width = parseInt(parts[0]);
+        const height = parseInt(parts[1]);
 
-    const format = document.getElementById("format2D").value;
-    const [w,h] = parseSize2D();
+        const totalPixels = width * height;
+        let arr = [];
 
-    const total = (format==="color") ? w*h : w*h*3;
-
-    let arr = [];
-
-    for(let i=0;i<total;i++){
-
-        if(format==="binary"){
-            arr.push(Math.random()<0.5 ? "00000000" : "11111111");
+        function randomByte() {
+            return Math.floor(Math.random() * 256);
         }
 
-        if(format==="decimal"){
-            arr.push(Math.floor(Math.random()*256));
-        }
+        for (let i = 0; i < totalPixels; i++) {
 
-        if(format==="hex"){
-            arr.push(Math.floor(Math.random()*256)
-                .toString(16).padStart(2,"0").toUpperCase());
-        }
+            if (format === "color") {
+                arr.push("#" + randomByte().toString(16).padStart(2, "0") +
+                               randomByte().toString(16).padStart(2, "0") +
+                               randomByte().toString(16).padStart(2, "0"));
+            } else {
 
-        if(format==="octal"){
-            arr.push(Math.floor(Math.random()*256)
-                .toString(8).padStart(3,"0"));
-        }
+                for (let j = 0; j < 3; j++) {
 
-        if(format==="morse"){
-            let v="";
-            for(let b=0;b<8;b++){
-                v+=Math.random()<0.5?".":"-";
+                    const val = randomByte();
+
+                    if (format === "binary")
+                        arr.push(val.toString(2).padStart(8, "0"));
+
+                    else if (format === "decimal")
+                        arr.push(val.toString());
+
+                    else if (format === "hex")
+                        arr.push(val.toString(16).toUpperCase());
+
+                    else if (format === "octal")
+                        arr.push(val.toString(8));
+
+                    else if (format === "morse")
+                        arr.push(val.toString(2)
+                            .padStart(8, "0")
+                            .replace(/1/g, "-")
+                            .replace(/0/g, "."));
+                }
             }
-            arr.push(v);
         }
 
-        if(format==="color"){
-            arr.push("#"+Math.floor(Math.random()*16777215)
-                .toString(16).padStart(6,"0"));
-        }
+        return arr.join(" ");
     }
 
-    document.getElementById("input2D").value = arr.join(" ");
-};
+    // ==================================================
+    // PNG DOWNLOAD
+    // ==================================================
 
-// ===============================
-// DOWNLOAD
-// ===============================
+    function download() {
+        const link = document.createElement("a");
+        link.download = "image.png";
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+    }
 
-document.getElementById("download2D").onclick = () => {
-    const link = document.createElement("a");
-    link.download = "numeral_render.png";
-    link.href = canvas.toDataURL("image/png");
-    link.click();
-};
+    return {
+        init,
+        render,
+        stress,
+        download
+    };
+
+})();
