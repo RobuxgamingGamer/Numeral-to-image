@@ -1,97 +1,108 @@
-/* ========================= */
-/* GLOBAL RESET */
-/* ========================= */
+/* ======================================================
+   NUMERAL VOXEL ENGINE — TRUE NEON THEME
+   Clean, sharp, responsive, no blur artifacts
+====================================================== */
 
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+}
+
+body {
+    background: #000000;
+    color: #00ff66;
     font-family: monospace;
-}
-
-html, body {
-    background: #000;
-    color: #00ff9c;
-    width: 100%;
-    overflow-x: hidden;
-}
-
-/* ========================= */
-/* WRAPPER */
-/* ========================= */
-
-.wrapper {
-    max-width: 1100px;
-    margin: auto;
     padding: 20px;
 }
 
-/* ========================= */
-/* HEADINGS */
-/* ========================= */
+/* ======================================================
+   TITLES
+====================================================== */
 
-h1 {
+.title {
     text-align: center;
-    margin-bottom: 30px;
-    font-size: 28px;
+    font-size: 32px;
+    margin-bottom: 20px;
+    color: #00ff66;
+    text-shadow:
+        0 0 5px #00ff66,
+        0 0 10px #00ff66,
+        0 0 20px #00ff66,
+        0 0 40px #00ff66;
+}
+
+/* ======================================================
+   MODE SWITCH
+====================================================== */
+
+.mode-switch {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.mode-switch button {
+    background: black;
+    border: 2px solid #00ff66;
+    color: #00ff66;
+    padding: 10px 20px;
+    margin: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: 0.2s;
+}
+
+.mode-switch button:hover {
+    background: #00ff66;
+    color: black;
+    box-shadow:
+        0 0 10px #00ff66,
+        0 0 20px #00ff66;
+}
+
+/* ======================================================
+   RULES PANEL
+====================================================== */
+
+.rules {
+    border: 1px solid #00ff66;
+    padding: 15px;
+    margin-bottom: 25px;
+    box-shadow:
+        0 0 10px #00ff66;
+}
+
+.rules h3 {
+    margin-bottom: 10px;
+}
+
+.rules p {
+    margin-bottom: 6px;
+}
+
+/* ======================================================
+   SECTIONS
+====================================================== */
+
+section {
+    margin-top: 20px;
+    border: 1px solid #00ff66;
+    padding: 20px;
+    box-shadow:
+        0 0 10px #00ff66;
 }
 
 h2 {
     margin-bottom: 15px;
 }
 
-/* ========================= */
-/* GLOBAL RULES BOX */
-/* ========================= */
-
-.global-rules {
-    border: 2px solid #00ff9c;
-    padding: 15px;
-    margin-bottom: 25px;
-}
-
-.global-rules ul {
-    margin-top: 10px;
-    padding-left: 20px;
-}
-
-.global-rules li {
-    margin-bottom: 6px;
-}
-
-/* ========================= */
-/* MODE SWITCH */
-/* ========================= */
-
-.mode-switch {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    margin-bottom: 25px;
-}
-
-/* ========================= */
-/* ENGINE SECTION */
-/* ========================= */
-
-.engine-section {
-    border: 2px solid #00ff9c;
-    padding: 20px;
-    margin-bottom: 40px;
-    display: none;
-}
-
-.engine-section.active {
-    display: block;
-}
-
-/* ========================= */
-/* LABELS + INPUTS */
-/* ========================= */
+/* ======================================================
+   INPUTS
+====================================================== */
 
 label {
     display: block;
-    margin-top: 15px;
+    margin-top: 10px;
     margin-bottom: 5px;
 }
 
@@ -99,121 +110,120 @@ input[type="text"],
 select,
 textarea {
     width: 100%;
-    background: #000;
-    border: 2px solid #00ff9c;
-    color: #00ff9c;
+    background: #000000;
+    color: #00ff66;
+    border: 1px solid #00ff66;
     padding: 8px;
-    resize: vertical;
+    margin-bottom: 10px;
+    font-family: monospace;
 }
 
 textarea {
-    min-height: 100px;
-    margin-top: 10px;
+    min-height: 120px;
+    resize: vertical;
 }
 
-/* ========================= */
-/* BUTTONS */
-/* ========================= */
+/* ======================================================
+   RANGE SLIDERS
+====================================================== */
 
-button {
-    background: transparent;
-    border: 2px solid #00ff9c;
-    color: #00ff9c;
-    padding: 10px 15px;
+input[type="range"] {
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+/* ======================================================
+   BUTTON ROW
+====================================================== */
+
+.button-row {
+    margin-top: 10px;
+    margin-bottom: 15px;
+}
+
+.button-row button {
+    background: black;
+    border: 2px solid #00ff66;
+    color: #00ff66;
+    padding: 8px 16px;
+    margin-right: 10px;
     cursor: pointer;
     transition: 0.2s;
 }
 
-button:hover {
-    background: #00ff9c;
-    color: #000;
+.button-row button:hover {
+    background: #00ff66;
+    color: black;
+    box-shadow:
+        0 0 10px #00ff66,
+        0 0 25px #00ff66;
 }
 
-.button-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-    margin-top: 15px;
-}
+/* ======================================================
+   STATS DISPLAY
+====================================================== */
 
-/* ========================= */
-/* STATS */
-/* ========================= */
-
-.stats {
-    margin-top: 15px;
+#stats2D,
+#stats3D {
+    margin-top: 10px;
     font-size: 14px;
+    color: #00ffcc;
+    text-shadow:
+        0 0 5px #00ffcc;
 }
 
-/* ========================= */
-/* ENGINE FRAME */
-/* ========================= */
-
-.engine-frame {
-    margin-top: 20px;
-    border: 2px solid #00ff9c;
-    width: 100%;
-    max-width: 100%;
-    overflow: hidden;
-    position: relative;
-}
-
-/* 2D Canvas Fix */
+/* ======================================================
+   2D CANVAS
+====================================================== */
 
 #canvas2D {
+    margin-top: 20px;
+    border: 2px solid #00ff66;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
     display: block;
-    width: 100%;
-    height: auto;
+    max-width: 100%;
 }
 
-/* 3D Container Fix */
+/* ======================================================
+   3D CONTAINER
+====================================================== */
 
 #threeContainer {
-    width: 100%;
-    height: 400px;
-}
-
-/* ========================= */
-/* RANGE SLIDER */
-/* ========================= */
-
-input[type="range"] {
-    width: 100%;
-    margin-top: 10px;
-}
-
-/* ========================= */
-/* FACES MODE */
-/* ========================= */
-
-.faces-container {
     margin-top: 20px;
+    border: 2px solid #00ff66;
+    width: 100%;
+    height: 500px;
+    box-shadow:
+        0 0 20px #00ff66;
 }
 
-.faces-container textarea {
-    margin-bottom: 10px;
+/* ======================================================
+   FACE UI
+====================================================== */
+
+#facesUI textarea {
+    margin-bottom: 15px;
 }
 
-.hidden {
-    display: none;
-}
-
-/* ========================= */
-/* MOBILE RESPONSIVE */
-/* ========================= */
+/* ======================================================
+   RESPONSIVE
+====================================================== */
 
 @media (max-width: 768px) {
 
-    h1 {
-        font-size: 22px;
+    body {
+        padding: 10px;
     }
 
-    .wrapper {
-        padding: 15px;
+    .mode-switch button {
+        width: 100%;
+        margin-bottom: 10px;
     }
 
-    #threeContainer {
-        height: 300px;
+    .button-row button {
+        width: 100%;
+        margin-bottom: 10px;
     }
 
 }
