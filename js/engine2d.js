@@ -4,8 +4,7 @@
 // ======================================================
 
 "use strict";
-
-const Engine2D = (function () {
+window.Engine2D = (function () {
 
     let canvas, ctx;
 
