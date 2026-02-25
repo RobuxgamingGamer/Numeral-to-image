@@ -7,7 +7,10 @@
 
 <link rel="stylesheet" href="css/style.css">
 
-<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js" defer></script>
+<!-- THREE JS -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
+
+<!-- CORE SCRIPTS -->
 <script src="js/utils.js" defer></script>
 <script src="js/engine2d.js" defer></script>
 <script src="js/engine3d.js" defer></script>
@@ -18,17 +21,20 @@
 
 <h1 class="title">Numeral Voxel Engine</h1>
 
+<!-- MODE SWITCH -->
 <div class="mode-switch">
-    <button id="btn2D">2D Engine</button>
-    <button id="btn3D">3D Engine</button>
+    <button type="button" id="btn2D">2D Engine</button>
+    <button type="button" id="btn3D">3D Engine</button>
 </div>
+
+<!-- ================= 2D SECTION ================= -->
 
 <section id="section2D">
 
 <h2>2D Image Renderer</h2>
 
 <label>Size (X-Y)</label>
-<input id="size2D" value="4-4">
+<input type="text" id="size2D" value="4-4">
 
 <label>Format</label>
 <select id="format2D">
@@ -40,25 +46,29 @@
     <option value="color">ColorCode</option>
 </select>
 
+<label>Input Data</label>
 <textarea id="input2D"></textarea>
 
 <div class="button-row">
-    <button id="convert2D">Convert</button>
-    <button id="stress2D">Stress Test</button>
-    <button id="download2D">Download PNG</button>
+    <button type="button" id="convert2D">Convert</button>
+    <button type="button" id="stress2D">Stress Test</button>
+    <button type="button" id="download2D">Download PNG</button>
 </div>
 
 <div id="stats2D">0 ms | 0 FPS</div>
+
 <canvas id="canvas2D"></canvas>
 
 </section>
+
+<!-- ================= 3D SECTION ================= -->
 
 <section id="section3D" style="display:none;">
 
 <h2>3D Voxel Engine</h2>
 
 <label>Size (X-Y-Z)</label>
-<input id="size3D" value="2-2-2">
+<input type="text" id="size3D" value="2-2-2">
 
 <label>Format</label>
 <select id="format3D">
@@ -74,30 +84,45 @@
 <input type="range" id="alpha3D" min="0" max="1" step="0.01" value="1">
 
 <label>Glossiness</label>
-<input type="range" id="gloss3D" min="0" max="200" value="30">
+<input type="range" id="gloss3D" min="0" max="200" step="1" value="30">
 
 <div class="button-row">
-    <button id="editCubeBtn">Edit Cube</button>
-    <button id="editFacesBtn">Edit Faces</button>
+    <button type="button" id="editCubeBtn">Edit Cube</button>
+    <button type="button" id="editFacesBtn">Edit 6 Faces</button>
 </div>
 
 <div id="facesUI" style="display:none;">
-<textarea id="faceFront"></textarea>
-<textarea id="faceBack"></textarea>
-<textarea id="faceLeft"></textarea>
-<textarea id="faceRight"></textarea>
-<textarea id="faceTop"></textarea>
-<textarea id="faceBottom"></textarea>
+
+    <h4>Front</h4>
+    <textarea id="faceFront"></textarea>
+
+    <h4>Back</h4>
+    <textarea id="faceBack"></textarea>
+
+    <h4>Left</h4>
+    <textarea id="faceLeft"></textarea>
+
+    <h4>Right</h4>
+    <textarea id="faceRight"></textarea>
+
+    <h4>Top</h4>
+    <textarea id="faceTop"></textarea>
+
+    <h4>Bottom</h4>
+    <textarea id="faceBottom"></textarea>
+
 </div>
 
+<label>Voxel Input</label>
 <textarea id="input3D"></textarea>
 
 <div class="button-row">
-    <button id="convert3D">Convert</button>
-    <button id="stress3D">Stress Test</button>
+    <button type="button" id="convert3D">Convert</button>
+    <button type="button" id="stress3D">Stress Test</button>
 </div>
 
 <div id="stats3D">0 ms | 0 FPS</div>
+
 <div id="threeContainer" style="height:500px;"></div>
 
 </section>
