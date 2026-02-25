@@ -7,22 +7,25 @@
 
 <link rel="stylesheet" href="css/style.css">
 
-<!-- Three.js -->
-<script src="libs/three.min.js"></script>
+<!-- Load Three.js FIRST -->
+<script src="libs/three.min.js" defer></script>
+
+<!-- Load scripts AFTER DOM -->
+<script src="js/utils.js" defer></script>
+<script src="js/engine2d.js" defer></script>
+<script src="js/engine3d.js" defer></script>
+<script src="js/app.js" defer></script>
 
 </head>
+
 <body>
 
 <h1 class="title">Numeral Voxel Engine</h1>
 
-<!-- ================= MODE SWITCH ================= -->
-
 <div class="mode-switch">
-    <button id="mode2D">2D Engine</button>
-    <button id="mode3D">3D Engine</button>
+    <button id="mode2D" type="button">2D Engine</button>
+    <button id="mode3D" type="button">3D Engine</button>
 </div>
-
-<!-- ================= RULES ================= -->
 
 <div class="rules">
     <h3>Global Rules</h3>
@@ -32,12 +35,10 @@
     <p>Binary / Decimal / Hex / Octal / Morse → 3 values per pixel</p>
     <p>ColorCode → 1 value per pixel (#RRGGBB)</p>
     <p>FPS + ms calculated only when Convert is pressed</p>
-    <p>3D rotation: swipe / drag only (no auto-spin)</p>
+    <p>3D rotation: swipe / drag only</p>
 </div>
 
-<!-- ========================================================= -->
-<!-- ======================= 2D ENGINE ======================= -->
-<!-- ========================================================= -->
+<!-- ====================== 2D ====================== -->
 
 <section id="engine2D">
 
@@ -60,9 +61,9 @@
 <textarea id="input2D" placeholder="Enter numeric values separated by spaces..."></textarea>
 
 <div class="button-row">
-    <button id="convert2D">Convert</button>
-    <button id="stress2D">Stress Test</button>
-    <button id="download2D">Download PNG</button>
+    <button id="convert2D" type="button">Convert</button>
+    <button id="stress2D" type="button">Stress Test</button>
+    <button id="download2D" type="button">Download PNG</button>
 </div>
 
 <div id="stats2D">0 ms | 0 FPS</div>
@@ -71,9 +72,7 @@
 
 </section>
 
-<!-- ========================================================= -->
-<!-- ======================= 3D ENGINE ======================= -->
-<!-- ========================================================= -->
+<!-- ====================== 3D ====================== -->
 
 <section id="engine3D" style="display:none;">
 
@@ -99,11 +98,9 @@
 <input type="range" id="gloss3D" min="0" max="200" step="1" value="30">
 
 <div class="button-row">
-    <button id="editCubeBtn">Edit Cube</button>
-    <button id="editFacesBtn">Edit 6 Faces</button>
+    <button id="editCubeBtn" type="button">Edit Cube</button>
+    <button id="editFacesBtn" type="button">Edit 6 Faces</button>
 </div>
-
-<!-- ========== FACES UI ========== -->
 
 <div id="facesUI" style="display:none;">
 
@@ -127,30 +124,20 @@
 
 </div>
 
-<!-- ========== CUBE INPUT ========== -->
-
 <label>Voxel Data</label>
 <textarea id="input3D" placeholder="Enter voxel data separated by spaces..."></textarea>
 
 <div class="button-row">
-    <button id="convert3D">Convert</button>
-    <button id="stress3D">Stress Test</button>
+    <button id="convert3D" type="button">Convert</button>
+    <button id="stress3D" type="button">Stress Test</button>
 </div>
 
 <div id="stats3D">0 ms | 0 FPS</div>
 
-<div id="threeContainer"></div>
+<!-- 3D RENDER TARGET -->
+<div id="threeContainer" style="width:100%; height:500px;"></div>
 
 </section>
-
-<!-- ========================================================= -->
-<!-- ======================= SCRIPTS ========================= -->
-<!-- ========================================================= -->
-
-<script src="js/utils.js"></script>
-<script src="js/engine2d.js"></script>
-<script src="js/engine3d.js"></script>
-<script src="js/app.js"></script>
 
 </body>
 </html>
