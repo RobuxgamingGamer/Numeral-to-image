@@ -5,7 +5,7 @@
 
 "use strict";
 
-const Engine3D = (function () {
+window.Engine3D = (function () {
 
     let scene, camera, renderer;
     let container;
