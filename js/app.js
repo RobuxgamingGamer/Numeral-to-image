@@ -1,3 +1,5 @@
+document.body.insertAdjacentHTML("afterbegin",
+"<div style='position:fixed;top:0;left:0;background:red;color:white;padding:5px;z-index:9999'>APP LOADED</div>");
 "use strict";
 
 document.addEventListener("DOMContentLoaded", () => {
