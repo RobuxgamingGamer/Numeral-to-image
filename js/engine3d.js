@@ -1,31 +1,20 @@
-// ======================================================
-// NUMERAL VOXEL ENGINE — 3D CORE
-// Clean, modular, no UI control, no fluff
-// ======================================================
-
 "use strict";
 
 window.Engine3D = (function () {
 
-    let scene, camera, renderer;
+    let scene;
+    let camera;
+    let renderer;
     let container;
-    let voxelGroup;
-    let materials = [];
+    let group;
 
-    let rotationX = 0;
-    let rotationY = 0;
-
-    let dragging = false;
+    let isDragging = false;
     let lastX = 0;
     let lastY = 0;
-    let lastPinchDist = null;
 
-    const MAX_CUBE = 10;
-    const MAX_FACES = 25;
-
-    // ==================================================
+    // ======================================
     // INIT
-    // ==================================================
+    // ======================================
 
     function init(containerId) {
 
@@ -38,273 +27,125 @@ window.Engine3D = (function () {
             60,
             container.clientWidth / 500,
             0.1,
-            2000
+            1000
         );
 
-        camera.position.set(15, 15, 15);
+        camera.position.set(10, 10, 10);
+        camera.lookAt(0, 0, 0);
 
-        renderer = new THREE.WebGLRenderer({
-            antialias: true,
-            alpha: false
-        });
-
+        renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(container.clientWidth, 500);
-        renderer.setPixelRatio(window.devicePixelRatio);
         container.appendChild(renderer.domElement);
 
-        voxelGroup = new THREE.Group();
-        scene.add(voxelGroup);
+        const light1 = new THREE.DirectionalLight(0xffffff, 1);
+        light1.position.set(20, 20, 20);
+        scene.add(light1);
 
-        const light = new THREE.DirectionalLight(0xffffff, 1.2);
-        light.position.set(20, 30, 20);
-        scene.add(light);
+        const light2 = new THREE.AmbientLight(0xffffff, 0.3);
+        scene.add(light2);
 
-        const ambient = new THREE.AmbientLight(0xffffff, 0.4);
-        scene.add(ambient);
+        group = new THREE.Group();
+        scene.add(group);
 
-        enableControls();
-        renderFrame();
+        enableSwipe();
+
+        animate();
     }
 
-    // ==================================================
-    // CAMERA CONTROLS (Swipe + Pinch)
-    // ==================================================
+    // ======================================
+    // SWIPE ROTATION
+    // ======================================
 
-    function enableControls() {
+    function enableSwipe() {
 
-        const dom = renderer.domElement;
-
-        dom.addEventListener("mousedown", (e) => {
-            dragging = true;
+        renderer.domElement.addEventListener("mousedown", (e) => {
+            isDragging = true;
             lastX = e.clientX;
             lastY = e.clientY;
         });
 
-        dom.addEventListener("mouseup", () => dragging = false);
-        dom.addEventListener("mouseleave", () => dragging = false);
+        renderer.domElement.addEventListener("mouseup", () => {
+            isDragging = false;
+        });
 
-        dom.addEventListener("mousemove", (e) => {
-            if (!dragging) return;
+        renderer.domElement.addEventListener("mousemove", (e) => {
+            if (!isDragging) return;
 
-            const dx = e.clientX - lastX;
-            const dy = e.clientY - lastY;
+            const deltaX = e.clientX - lastX;
+            const deltaY = e.clientY - lastY;
 
-            rotationY += dx * 0.01;
-            rotationX += dy * 0.01;
+            group.rotation.y += deltaX * 0.01;
+            group.rotation.x += deltaY * 0.01;
 
             lastX = e.clientX;
             lastY = e.clientY;
         });
 
-        dom.addEventListener("wheel", (e) => {
-            camera.position.multiplyScalar(e.deltaY > 0 ? 1.1 : 0.9);
+        renderer.domElement.addEventListener("touchstart", (e) => {
+            isDragging = true;
+            lastX = e.touches[0].clientX;
+            lastY = e.touches[0].clientY;
         });
 
-        dom.addEventListener("touchstart", (e) => {
+        renderer.domElement.addEventListener("touchmove", (e) => {
+            if (!isDragging) return;
 
-            if (e.touches.length === 1) {
-                dragging = true;
-                lastX = e.touches[0].clientX;
-                lastY = e.touches[0].clientY;
-            }
+            const deltaX = e.touches[0].clientX - lastX;
+            const deltaY = e.touches[0].clientY - lastY;
 
-            if (e.touches.length === 2) {
-                lastPinchDist = getPinchDistance(e);
-            }
+            group.rotation.y += deltaX * 0.01;
+            group.rotation.x += deltaY * 0.01;
+
+            lastX = e.touches[0].clientX;
+            lastY = e.touches[0].clientY;
         });
 
-        dom.addEventListener("touchmove", (e) => {
-
-            if (e.touches.length === 1 && dragging) {
-
-                const dx = e.touches[0].clientX - lastX;
-                const dy = e.touches[0].clientY - lastY;
-
-                rotationY += dx * 0.01;
-                rotationX += dy * 0.01;
-
-                lastX = e.touches[0].clientX;
-                lastY = e.touches[0].clientY;
-            }
-
-            if (e.touches.length === 2) {
-
-                const newDist = getPinchDistance(e);
-
-                if (lastPinchDist) {
-                    const scale = newDist / lastPinchDist;
-                    camera.position.multiplyScalar(scale < 1 ? 1.05 : 0.95);
-                }
-
-                lastPinchDist = newDist;
-            }
-        });
-
-        dom.addEventListener("touchend", () => {
-            dragging = false;
-            lastPinchDist = null;
+        renderer.domElement.addEventListener("touchend", () => {
+            isDragging = false;
         });
     }
 
-    function getPinchDistance(e) {
-        const dx = e.touches[0].clientX - e.touches[1].clientX;
-        const dy = e.touches[0].clientY - e.touches[1].clientY;
-        return Math.sqrt(dx * dx + dy * dy);
-    }
-
-    // ==================================================
+    // ======================================
     // CLEAR
-    // ==================================================
+    // ======================================
 
     function clear() {
-        while (voxelGroup.children.length > 0) {
-            const obj = voxelGroup.children[0];
-            voxelGroup.remove(obj);
+        while (group.children.length > 0) {
+            group.remove(group.children[0]);
         }
-        materials = [];
     }
 
-    // ==================================================
-    // FORMAT PARSER
-    // ==================================================
+    // ======================================
+    // PARSE BYTE
+    // ======================================
 
     function parseByte(value, format) {
 
-        if (format === "binary") return parseInt(value, 2);
-        if (format === "decimal") return parseInt(value);
-        if (format === "hex") return parseInt(value, 16);
-        if (format === "octal") return parseInt(value, 8);
+        if (format === "binary")
+            return parseInt(value, 2);
+
+        if (format === "decimal")
+            return parseInt(value);
+
+        if (format === "hex")
+            return parseInt(value, 16);
+
+        if (format === "octal")
+            return parseInt(value, 8);
 
         if (format === "morse") {
             const bin = value.replace(/-/g, "1").replace(/\./g, "0");
             return parseInt(bin, 2);
         }
 
-        return null;
+        return 0;
     }
 
-    // ==================================================
-    // BUILD SOLID CUBE
-    // ==================================================
+    // ======================================
+    // RENDER
+    // ======================================
 
-    function buildCube(values, format, x, y, z, alpha, gloss) {
-
-        const total = x * y * z;
-        let index = 0;
-
-        for (let i = 0; i < x; i++) {
-            for (let j = 0; j < y; j++) {
-                for (let k = 0; k < z; k++) {
-
-                    let color;
-
-                    if (format === "color") {
-                        color = values[index++];
-                    } else {
-                        const r = parseByte(values[index++], format);
-                        const g = parseByte(values[index++], format);
-                        const b = parseByte(values[index++], format);
-                        color = `rgb(${r},${g},${b})`;
-                    }
-
-                    if (alpha <= 0) continue;
-
-                    const material = new THREE.MeshPhongMaterial({
-                        color: color,
-                        shininess: gloss,
-                        transparent: alpha < 1,
-                        opacity: alpha,
-                        depthWrite: alpha === 1
-                    });
-
-                    materials.push(material);
-
-                    const cube = new THREE.Mesh(
-                        new THREE.BoxGeometry(1, 1, 1),
-                        material
-                    );
-
-                    cube.position.set(
-                        i - x / 2,
-                        j - y / 2,
-                        k - z / 2
-                    );
-
-                    voxelGroup.add(cube);
-                }
-            }
-        }
-    }
-
-    // ==================================================
-    // BUILD 6 FACES (HOLLOW)
-    // ==================================================
-
-    function buildFaces(values, format, x, y, z, alpha, gloss) {
-
-        let index = 0;
-
-        function placeVoxel(i, j, k, color) {
-
-            if (alpha <= 0) return;
-
-            const material = new THREE.MeshPhongMaterial({
-                color: color,
-                shininess: gloss,
-                transparent: alpha < 1,
-                opacity: alpha,
-                depthWrite: alpha === 1
-            });
-
-            materials.push(material);
-
-            const cube = new THREE.Mesh(
-                new THREE.BoxGeometry(1, 1, 1),
-                material
-            );
-
-            cube.position.set(
-                i - x / 2,
-                j - y / 2,
-                k - z / 2
-            );
-
-            voxelGroup.add(cube);
-        }
-
-        for (let i = 0; i < x; i++) {
-            for (let j = 0; j < y; j++) {
-                for (let k = 0; k < z; k++) {
-
-                    const isEdge =
-                        i === 0 || i === x - 1 ||
-                        j === 0 || j === y - 1 ||
-                        k === 0 || k === z - 1;
-
-                    if (!isEdge) continue;
-
-                    let color;
-
-                    if (format === "color") {
-                        color = values[index++];
-                    } else {
-                        const r = parseByte(values[index++], format);
-                        const g = parseByte(values[index++], format);
-                        const b = parseByte(values[index++], format);
-                        color = `rgb(${r},${g},${b})`;
-                    }
-
-                    placeVoxel(i, j, k, color);
-                }
-            }
-        }
-    }
-
-    // ==================================================
-    // RENDER ENTRY
-    // ==================================================
-
-    function render(mode, sizeStr, format, inputStr, alpha, gloss) {
+    function render(sizeStr, format, inputStr, alpha, gloss) {
 
         const start = performance.now();
 
@@ -317,13 +158,44 @@ window.Engine3D = (function () {
 
         const values = inputStr.trim().split(/\s+/);
 
-        if (mode === "cube") {
-            buildCube(values, format, x, y, z, alpha, gloss);
-        } else {
-            buildFaces(values, format, x, y, z, alpha, gloss);
-        }
+        let index = 0;
 
-        renderFrame();
+        for (let i = 0; i < x; i++) {
+            for (let j = 0; j < y; j++) {
+                for (let k = 0; k < z; k++) {
+
+                    let color;
+
+                    if (format === "color") {
+                        color = values[index++];
+                    } else {
+                        const r = parseByte(values[index++], format);
+                        const g = parseByte(values[index++], format);
+                        const b = parseByte(values[index++], format);
+                        color = `rgb(${r},${g},${b})`;
+                    }
+
+                    const geometry = new THREE.BoxGeometry(1, 1, 1);
+
+                    const material = new THREE.MeshPhongMaterial({
+                        color: color,
+                        shininess: parseInt(gloss),
+                        transparent: alpha < 1,
+                        opacity: parseFloat(alpha)
+                    });
+
+                    const cube = new THREE.Mesh(geometry, material);
+
+                    cube.position.set(
+                        i - x / 2,
+                        j - y / 2,
+                        k - z / 2
+                    );
+
+                    group.add(cube);
+                }
+            }
+        }
 
         const end = performance.now();
         const delta = end - start || 0.0001;
@@ -334,98 +206,66 @@ window.Engine3D = (function () {
         };
     }
 
-    // ==================================================
+    // ======================================
     // STRESS
-    // ==================================================
+    // ======================================
 
-    function stress(mode, sizeStr, format) {
+    function stress(sizeStr, format) {
 
         const parts = sizeStr.split("-");
         const x = parseInt(parts[0]);
         const y = parseInt(parts[1]);
         const z = parseInt(parts[2]);
 
-        const total = mode === "cube"
+        const total = format === "color"
             ? x * y * z
-            : (x * y * z);
+            : x * y * z * 3;
 
         let arr = [];
 
-        function randomByte() {
-            return Math.floor(Math.random() * 256);
-        }
-
         for (let i = 0; i < total; i++) {
 
-            if (format === "color") {
-                arr.push("#" +
-                    randomByte().toString(16).padStart(2, "0") +
-                    randomByte().toString(16).padStart(2, "0") +
-                    randomByte().toString(16).padStart(2, "0"));
-            } else {
+            const val = Math.floor(Math.random() * 256);
 
-                for (let j = 0; j < 3; j++) {
+            if (format === "binary")
+                arr.push(val.toString(2).padStart(8, "0"));
 
-                    const val = randomByte();
+            else if (format === "decimal")
+                arr.push(val.toString());
 
-                    if (format === "binary")
-                        arr.push(val.toString(2).padStart(8, "0"));
+            else if (format === "hex")
+                arr.push(val.toString(16).toUpperCase());
 
-                    else if (format === "decimal")
-                        arr.push(val.toString());
+            else if (format === "octal")
+                arr.push(val.toString(8));
 
-                    else if (format === "hex")
-                        arr.push(val.toString(16).toUpperCase());
+            else if (format === "morse")
+                arr.push(val.toString(2).padStart(8, "0")
+                    .replace(/1/g, "-")
+                    .replace(/0/g, "."));
 
-                    else if (format === "octal")
-                        arr.push(val.toString(8));
-
-                    else if (format === "morse")
-                        arr.push(val.toString(2)
-                            .padStart(8, "0")
-                            .replace(/1/g, "-")
-                            .replace(/0/g, "."));
-                }
-            }
+            else if (format === "color")
+                arr.push("#" + val.toString(16).padStart(2, "0")
+                    + val.toString(16).padStart(2, "0")
+                    + val.toString(16).padStart(2, "0"));
         }
 
         return arr.join(" ");
     }
 
-    // ==================================================
-    // LIVE GLOSS UPDATE
-    // ==================================================
+    // ======================================
+    // ANIMATION LOOP
+    // ======================================
 
-    function updateGloss(gloss) {
-        materials.forEach(mat => mat.shininess = gloss);
-        renderFrame();
-    }
-
-    function updateAlpha(alpha) {
-        materials.forEach(mat => {
-            mat.opacity = alpha;
-            mat.transparent = alpha < 1;
-            mat.depthWrite = alpha === 1;
-        });
-        renderFrame();
-    }
-
-    // ==================================================
-    // FRAME RENDER
-    // ==================================================
-
-    function renderFrame() {
-        voxelGroup.rotation.x = rotationX;
-        voxelGroup.rotation.y = rotationY;
+    function animate() {
+        requestAnimationFrame(animate);
         renderer.render(scene, camera);
     }
 
     return {
         init,
         render,
-        stress,
-        updateGloss,
-        updateAlpha
+        stress
     };
 
 })();
