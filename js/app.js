@@ -20,10 +20,9 @@ document.addEventListener("DOMContentLoaded", function () {
         Engine2D.init("canvas2D");
     }
 
-    if (window.Engine3D && $("threeContainer")) {
+    if (window.Engine3D && typeof THREE !== "undefined") {
         Engine3D.init("threeContainer");
     }
-
     // ===============================
     // MODE SWITCH
     // ===============================
