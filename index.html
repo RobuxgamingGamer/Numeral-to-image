@@ -7,33 +7,26 @@
 
 <link rel="stylesheet" href="css/style.css">
 
-<!-- THREE JS -->
-<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
-
-<!-- CORE SCRIPTS -->
+<!-- THREE FIRST -->
 <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
-<script src="js/engine2d.js" defer></script>
-<script src="js/engine3d.js" defer></script>
-<script src="js/app.js" defer></script>
+
 </head>
-<script>
-document.body.insertAdjacentHTML("beforeend",
-"<div id='debugBox' style='position:fixed;bottom:10px;left:10px;background:black;color:lime;padding:8px;font-size:12px;z-index:99999'>DEBUG START</div>"
-);
-</script>
 <body>
 
 <h1 class="title">Numeral Voxel Engine</h1>
 
-<!-- MODE SWITCH -->
+<!-- ================= MODE SWITCH ================= -->
+
 <div class="mode-switch">
-    <button type="button" id="btn2D">2D Engine</button>
-    <button type="button" id="btn3D">3D Engine</button>
+  <button type="button" id="mode2D">2D Engine</button>
+  <button type="button" id="mode3D">3D Engine</button>
 </div>
 
-<!-- ================= 2D SECTION ================= -->
+<hr>
 
-<section id="section2D">
+<!-- ================= 2D ENGINE ================= -->
+
+<section id="engine2D">
 
 <h2>2D Image Renderer</h2>
 
@@ -42,21 +35,20 @@ document.body.insertAdjacentHTML("beforeend",
 
 <label>Format</label>
 <select id="format2D">
-    <option value="binary">Binary</option>
-    <option value="decimal">Decimal</option>
-    <option value="hex">Hex</option>
-    <option value="octal">Octal</option>
-    <option value="morse">Morse</option>
-    <option value="color">ColorCode</option>
+  <option value="binary">Binary</option>
+  <option value="decimal">Decimal</option>
+  <option value="hex">Hex</option>
+  <option value="octal">Octal</option>
+  <option value="morse">Morse</option>
+  <option value="color">ColorCode</option>
 </select>
 
-<label>Input Data</label>
-<textarea id="input2D"></textarea>
+<textarea id="input2D" placeholder="Enter values separated by spaces..."></textarea>
 
 <div class="button-row">
-    <button type="button" id="convert2D">Convert</button>
-    <button type="button" id="stress2D">Stress Test</button>
-    <button type="button" id="download2D">Download PNG</button>
+  <button type="button" id="convert2D">Convert</button>
+  <button type="button" id="stress2D">Stress Test</button>
+  <button type="button" id="download2D">Download PNG</button>
 </div>
 
 <div id="stats2D">0 ms | 0 FPS</div>
@@ -65,9 +57,9 @@ document.body.insertAdjacentHTML("beforeend",
 
 </section>
 
-<!-- ================= 3D SECTION ================= -->
+<!-- ================= 3D ENGINE ================= -->
 
-<section id="section3D" style="display:none;">
+<section id="engine3D" style="display:none;">
 
 <h2>3D Voxel Engine</h2>
 
@@ -76,12 +68,12 @@ document.body.insertAdjacentHTML("beforeend",
 
 <label>Format</label>
 <select id="format3D">
-    <option value="binary">Binary</option>
-    <option value="decimal">Decimal</option>
-    <option value="hex">Hex</option>
-    <option value="octal">Octal</option>
-    <option value="morse">Morse</option>
-    <option value="color">ColorCode</option>
+  <option value="binary">Binary</option>
+  <option value="decimal">Decimal</option>
+  <option value="hex">Hex</option>
+  <option value="octal">Octal</option>
+  <option value="morse">Morse</option>
+  <option value="color">ColorCode</option>
 </select>
 
 <label>Transparency</label>
@@ -91,45 +83,50 @@ document.body.insertAdjacentHTML("beforeend",
 <input type="range" id="gloss3D" min="0" max="200" step="1" value="30">
 
 <div class="button-row">
-    <button type="button" id="editCubeBtn">Edit Cube</button>
-    <button type="button" id="editFacesBtn">Edit 6 Faces</button>
+  <button type="button" id="editCubeBtn">Edit Cube</button>
+  <button type="button" id="editFacesBtn">Edit 6 Faces</button>
 </div>
 
 <div id="facesUI" style="display:none;">
 
-    <h4>Front</h4>
-    <textarea id="faceFront"></textarea>
+  <h4>Front</h4>
+  <textarea id="faceFront"></textarea>
 
-    <h4>Back</h4>
-    <textarea id="faceBack"></textarea>
+  <h4>Back</h4>
+  <textarea id="faceBack"></textarea>
 
-    <h4>Left</h4>
-    <textarea id="faceLeft"></textarea>
+  <h4>Left</h4>
+  <textarea id="faceLeft"></textarea>
 
-    <h4>Right</h4>
-    <textarea id="faceRight"></textarea>
+  <h4>Right</h4>
+  <textarea id="faceRight"></textarea>
 
-    <h4>Top</h4>
-    <textarea id="faceTop"></textarea>
+  <h4>Top</h4>
+  <textarea id="faceTop"></textarea>
 
-    <h4>Bottom</h4>
-    <textarea id="faceBottom"></textarea>
+  <h4>Bottom</h4>
+  <textarea id="faceBottom"></textarea>
 
 </div>
 
-<label>Voxel Input</label>
-<textarea id="input3D"></textarea>
+<textarea id="input3D" placeholder="Enter voxel data..."></textarea>
 
 <div class="button-row">
-    <button type="button" id="convert3D">Convert</button>
-    <button type="button" id="stress3D">Stress Test</button>
+  <button type="button" id="convert3D">Convert</button>
+  <button type="button" id="stress3D">Stress Test</button>
 </div>
 
 <div id="stats3D">0 ms | 0 FPS</div>
 
-<div id="threeContainer" style="height:500px;"></div>
+<div id="threeContainer" style="width:100%; height:500px;"></div>
 
 </section>
+
+<!-- ================= SCRIPTS (ORDER MATTERS) ================= -->
+
+<script src="js/engine2d.js"></script>
+<script src="js/engine3d.js"></script>
+<script src="js/app.js"></script>
 
 </body>
 </html>
