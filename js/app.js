@@ -1,89 +1,163 @@
 "use strict";
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", function () {
 
-    console.log("App booted.");
+    console.log("APP LOADED");
 
-    // =============================
+    // ===============================
+    // SAFE GETTER
+    // ===============================
+
+    function $(id) {
+        return document.getElementById(id);
+    }
+
+    // ===============================
     // ENGINE INIT
-    // =============================
+    // ===============================
 
-    if (window.Engine2D) {
+    if (window.Engine2D && $("canvas2D")) {
         Engine2D.init("canvas2D");
     }
 
-    if (window.Engine3D) {
+    if (window.Engine3D && $("threeContainer")) {
         Engine3D.init("threeContainer");
     }
 
-    // =============================
+    // ===============================
     // MODE SWITCH
-    // =============================
+    // ===============================
 
-    document.getElementById("btn2D").addEventListener("click", () => {
-        document.getElementById("section2D").style.display = "block";
-        document.getElementById("section3D").style.display = "none";
-    });
+    if ($("mode2D") && $("mode3D")) {
 
-    document.getElementById("btn3D").addEventListener("click", () => {
-        document.getElementById("section2D").style.display = "none";
-        document.getElementById("section3D").style.display = "block";
-    });
+        $("mode2D").addEventListener("click", function () {
+            $("engine2D").style.display = "block";
+            $("engine3D").style.display = "none";
+        });
 
-    // =============================
-    // 2D BUTTONS
-    // =============================
+        $("mode3D").addEventListener("click", function () {
+            $("engine2D").style.display = "none";
+            $("engine3D").style.display = "block";
+        });
 
-    document.getElementById("convert2D").addEventListener("click", () => {
-        Engine2D.convert(
-            document.getElementById("size2D").value,
-            document.getElementById("format2D").value,
-            document.getElementById("input2D").value
-        );
-    });
+    }
 
-    document.getElementById("stress2D").addEventListener("click", () => {
-        Engine2D.stress(
-            document.getElementById("size2D").value,
-            document.getElementById("format2D").value
-        );
-    });
+    // ===============================
+    // 2D ENGINE BUTTONS
+    // ===============================
 
-    document.getElementById("download2D").addEventListener("click", () => {
-        Engine2D.download();
-    });
+    if ($("convert2D")) {
 
-    // =============================
-    // 3D BUTTONS
-    // =============================
+        $("convert2D").addEventListener("click", function () {
 
-    document.getElementById("convert3D").addEventListener("click", () => {
-        Engine3D.convert(
-            document.getElementById("size3D").value,
-            document.getElementById("format3D").value,
-            document.getElementById("input3D").value,
-            document.getElementById("alpha3D").value,
-            document.getElementById("gloss3D").value
-        );
-    });
+            try {
 
-    document.getElementById("stress3D").addEventListener("click", () => {
-        Engine3D.stress(
-            document.getElementById("size3D").value,
-            document.getElementById("format3D").value
-        );
-    });
+                const result = Engine2D.render(
+                    $("size2D").value,
+                    $("format2D").value,
+                    $("input2D").value
+                );
 
-    // =============================
-    // 3D FACE MODE
-    // =============================
+                $("stats2D").textContent =
+                    result.ms + " ms | " + result.fps + " FPS";
 
-    document.getElementById("editFacesBtn").addEventListener("click", () => {
-        document.getElementById("facesUI").style.display = "block";
-    });
+            } catch (e) {
+                $("stats2D").textContent = "ERROR: " + e.message;
+            }
 
-    document.getElementById("editCubeBtn").addEventListener("click", () => {
-        document.getElementById("facesUI").style.display = "none";
-    });
+        });
+    }
+
+    if ($("stress2D")) {
+
+        $("stress2D").addEventListener("click", function () {
+
+            try {
+
+                const generated = Engine2D.stress(
+                    $("size2D").value,
+                    $("format2D").value
+                );
+
+                $("input2D").value = generated;
+
+            } catch (e) {
+                $("stats2D").textContent = "ERROR: " + e.message;
+            }
+
+        });
+    }
+
+    if ($("download2D")) {
+
+        $("download2D").addEventListener("click", function () {
+            Engine2D.download();
+        });
+
+    }
+
+    // ===============================
+    // 3D ENGINE BUTTONS
+    // ===============================
+
+    if ($("convert3D")) {
+
+        $("convert3D").addEventListener("click", function () {
+
+            try {
+
+                const result = Engine3D.render(
+                    $("size3D").value,
+                    $("format3D").value,
+                    $("input3D").value,
+                    $("alpha3D").value,
+                    $("gloss3D").value
+                );
+
+                $("stats3D").textContent =
+                    result.ms + " ms | " + result.fps + " FPS";
+
+            } catch (e) {
+                $("stats3D").textContent = "ERROR: " + e.message;
+            }
+
+        });
+    }
+
+    if ($("stress3D")) {
+
+        $("stress3D").addEventListener("click", function () {
+
+            try {
+
+                const generated = Engine3D.stress(
+                    $("size3D").value,
+                    $("format3D").value
+                );
+
+                $("input3D").value = generated;
+
+            } catch (e) {
+                $("stats3D").textContent = "ERROR: " + e.message;
+            }
+
+        });
+    }
+
+    // ===============================
+    // 3D MODE TOGGLE (Cube / Faces)
+    // ===============================
+
+    if ($("editFacesBtn") && $("editCubeBtn")) {
+
+        $("editFacesBtn").addEventListener("click", function () {
+            $("facesUI").style.display = "block";
+        });
+
+        $("editCubeBtn").addEventListener("click", function () {
+            $("facesUI").style.display = "none";
+        });
+
+    }
 
 });
