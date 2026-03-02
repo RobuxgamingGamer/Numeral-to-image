@@ -177,12 +177,10 @@ window.Engine3D = (function () {
 
                     const geometry = new THREE.BoxGeometry(1, 1, 1);
 
-                    const material = new THREE.MeshPhongMaterial({
+                    const material = new THREE.MeshBasicMaterial({
                         color: color,
-                        shininess: parseInt(gloss),
-                        transparent: alpha < 1,
-                        opacity: parseFloat(alpha)
-                    });
+                        wireframe: false
+                      });
 
                     const cube = new THREE.Mesh(geometry, material);
 
