@@ -30,7 +30,7 @@ window.Engine3D = (function () {
             1000
         );
 
-        camera.position.set(10, 10, 10);
+        camera.position.set(6, 6, 6);
         camera.lookAt(0, 0, 0);
 
         renderer = new THREE.WebGLRenderer({ antialias: true });
