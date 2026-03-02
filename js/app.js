@@ -26,9 +26,14 @@ document.addEventListener("DOMContentLoaded", function () {
     const section2D = document.getElementById("engine2D");
     const section3D = document.getElementById("engine3D");
 
-   btn3D.onclick = () => {
+  btn3D.onclick = () => {
     section2D.style.display = "none";
     section3D.style.display = "block";
+
+    if (Engine3D && Engine3D.resize) {
+        Engine3D.resize();
+    }
+};
 
     if (typeof Engine3D !== "undefined") {
         Engine3D.resize();
