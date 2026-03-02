@@ -26,10 +26,14 @@ document.addEventListener("DOMContentLoaded", function () {
     const section2D = document.getElementById("engine2D");
     const section3D = document.getElementById("engine3D");
 
-    btn2D.onclick = function () {
-        section2D.style.display = "block";
-        section3D.style.display = "none";
-    };
+   btn3D.onclick = () => {
+    section2D.style.display = "none";
+    section3D.style.display = "block";
+
+    if (typeof Engine3D !== "undefined") {
+        Engine3D.resize();
+    }
+};
 
     btn3D.onclick = function () {
         section2D.style.display = "none";
