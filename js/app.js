@@ -4,10 +4,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     console.log("APP LOADED");
 
-    // ======================
-    // ENGINE INIT
-    // ======================
-
     if (window.Engine2D) {
         Engine2D.init("canvas2D");
     }
@@ -16,37 +12,30 @@ document.addEventListener("DOMContentLoaded", function () {
         Engine3D.init("threeContainer");
     }
 
-    // ======================
-    // MODE SWITCH
-    // ======================
-
     const btn2D = document.getElementById("mode2D");
     const btn3D = document.getElementById("mode3D");
 
     const section2D = document.getElementById("engine2D");
     const section3D = document.getElementById("engine3D");
 
-  btn3D.onclick = () => {
-    section2D.style.display = "none";
-    section3D.style.display = "block";
+    // 2D Toggle
+    btn2D.onclick = function () {
+        section2D.style.display = "block";
+        section3D.style.display = "none";
+    };
 
-    if (Engine3D && Engine3D.resize) {
-        Engine3D.resize();
-    }
-};
-
-    if (typeof Engine3D !== "undefined") {
-        Engine3D.resize();
-    }
-};
-
+    // 3D Toggle
     btn3D.onclick = function () {
         section2D.style.display = "none";
         section3D.style.display = "block";
+
+        if (Engine3D && Engine3D.resize) {
+            Engine3D.resize();
+        }
     };
 
     // ======================
-    // 2D BUTTONS
+    // 2D Buttons
     // ======================
 
     document.getElementById("convert2D").onclick = function () {
@@ -73,7 +62,7 @@ document.addEventListener("DOMContentLoaded", function () {
     };
 
     // ======================
-    // 3D BUTTONS
+    // 3D Buttons
     // ======================
 
     document.getElementById("convert3D").onclick = function () {
@@ -96,10 +85,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 document.getElementById("format3D").value
             );
     };
-
-    // ======================
-    // FACE MODE TOGGLE
-    // ======================
 
     document.getElementById("editCubeBtn").onclick = function () {
         document.getElementById("facesUI").style.display = "none";
