@@ -272,7 +272,8 @@ function resize() {
     return {
         init,
         render,
-        stress
+        stress,
+        resize
     };
 
 })();
