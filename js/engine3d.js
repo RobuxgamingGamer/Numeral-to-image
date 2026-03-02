@@ -259,7 +259,16 @@ window.Engine3D = (function () {
         requestAnimationFrame(animate);
         renderer.render(scene, camera);
     }
+function resize() {
+    if (!renderer || !camera) return;
 
+    const width = container.clientWidth;
+    const height = 400;
+
+    renderer.setSize(width, height);
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+}
     return {
         init,
         render,
