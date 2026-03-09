@@ -1,2 +1,11 @@
 # Numeral-to-image
-This is a link where you can put binary, hex, decimal, octal, morse code and color code input with a height scale from 1-1 to 1500-1500 and it will make an image with RGB colors!
+Hello! this is a link where you can test out making images and 3D cubes with:
+• binary code
+• decimal
+• hex
+• octal
+• morse code
+• colorcode 
+No limits
+
+Try out now 🚀🚀
