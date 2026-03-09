@@ -30,7 +30,7 @@ window.Engine3D = (function () {
             1000
         );
 
-        camera.position.set(10, 10, 10);
+        camera.position.set(6, 6, 6);
         camera.lookAt(0, 0, 0);
 
         renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -177,12 +177,10 @@ window.Engine3D = (function () {
 
                     const geometry = new THREE.BoxGeometry(1, 1, 1);
 
-                    const material = new THREE.MeshPhongMaterial({
+                    const material = new THREE.MeshBasicMaterial({
                         color: color,
-                        shininess: parseInt(gloss),
-                        transparent: alpha < 1,
-                        opacity: parseFloat(alpha)
-                    });
+                        wireframe: false
+                      });
 
                     const cube = new THREE.Mesh(geometry, material);
 
@@ -261,11 +259,21 @@ window.Engine3D = (function () {
         requestAnimationFrame(animate);
         renderer.render(scene, camera);
     }
+function resize() {
+    if (!renderer || !camera) return;
 
+    const width = container.clientWidth;
+    const height = 400;
+
+    renderer.setSize(width, height);
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+}
     return {
         init,
         render,
-        stress
+        stress,
+        resize
     };
 
 })();
