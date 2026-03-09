@@ -94,4 +94,28 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("facesUI").style.display = "block";
     };
 
+document.getElementById("stress3D").onclick = function () {
+
+    const size = document.getElementById("size3D").value;
+    const format = document.getElementById("format3D").value;
+
+    const facesVisible =
+        document.getElementById("facesUI").style.display === "block";
+
+    if (facesVisible) {
+
+        document.getElementById("faceFront").value = Engine3D.stress(size, format);
+        document.getElementById("faceBack").value  = Engine3D.stress(size, format);
+        document.getElementById("faceLeft").value  = Engine3D.stress(size, format);
+        document.getElementById("faceRight").value = Engine3D.stress(size, format);
+        document.getElementById("faceTop").value   = Engine3D.stress(size, format);
+        document.getElementById("faceBottom").value= Engine3D.stress(size, format);
+
+    } else {
+
+        document.getElementById("input3D").value =
+            Engine3D.stress(size, format);
+    }
+};
+
 });
