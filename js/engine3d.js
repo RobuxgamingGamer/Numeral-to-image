@@ -56,55 +56,39 @@ window.Engine3D = (function () {
     // SWIPE ROTATION
     // ======================================
 
-    function enableSwipe() {
+  function enableSwipe() {
 
-        renderer.domElement.addEventListener("mousedown", (e) => {
-            isDragging = true;
-            lastX = e.clientX;
-            lastY = e.clientY;
-        });
+    renderer.domElement.style.touchAction = "none";
 
-        renderer.domElement.addEventListener("mouseup", () => {
-            isDragging = false;
-        });
+    renderer.domElement.addEventListener("pointerdown", (e) => {
+        isDragging = true;
+        lastX = e.clientX;
+        lastY = e.clientY;
+    });
 
-        renderer.domElement.addEventListener("mousemove", (e) => {
-            if (!isDragging) return;
+    renderer.domElement.addEventListener("pointerup", () => {
+        isDragging = false;
+    });
 
-            const deltaX = e.clientX - lastX;
-            const deltaY = e.clientY - lastY;
+    renderer.domElement.addEventListener("pointermove", (e) => {
+        if (!isDragging) return;
 
-            group.rotation.y += deltaX * 0.01;
-            group.rotation.x += deltaY * 0.01;
+        const deltaX = e.clientX - lastX;
+        const deltaY = e.clientY - lastY;
 
-            lastX = e.clientX;
-            lastY = e.clientY;
-        });
+        group.rotation.y += deltaX * 0.005;
+        group.rotation.x += deltaY * 0.005;
 
-        renderer.domElement.addEventListener("touchstart", (e) => {
-            isDragging = true;
-            lastX = e.touches[0].clientX;
-            lastY = e.touches[0].clientY;
-        });
+        // clamp vertical rotation
+        group.rotation.x = Math.max(
+            -Math.PI / 2,
+            Math.min(Math.PI / 2, group.rotation.x)
+        );
 
-        renderer.domElement.addEventListener("touchmove", (e) => {
-            if (!isDragging) return;
-
-            const deltaX = e.touches[0].clientX - lastX;
-            const deltaY = e.touches[0].clientY - lastY;
-
-            group.rotation.y += deltaX * 0.01;
-            group.rotation.x += deltaY * 0.01;
-
-            lastX = e.touches[0].clientX;
-            lastY = e.touches[0].clientY;
-        });
-
-        renderer.domElement.addEventListener("touchend", () => {
-            isDragging = false;
-        });
-    }
-
+        lastX = e.clientX;
+        lastY = e.clientY;
+    });
+}
     // ======================================
     // CLEAR
     // ======================================
@@ -177,10 +161,13 @@ window.Engine3D = (function () {
 
                     const geometry = new THREE.BoxGeometry(1, 1, 1);
 
-                    const material = new THREE.MeshBasicMaterial({
-                        color: color,
-                        wireframe: false
-                      });
+                    const material = new THREE.MeshStandardMaterial({
+    color: color,
+    transparent: true,
+    opacity: parseFloat(alpha),
+    roughness: 1 - Math.min(parseFloat(gloss) / 200, 1),
+    metalness: 0.5
+});
 
                     const cube = new THREE.Mesh(geometry, material);
 
