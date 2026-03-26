@@ -2,19 +2,13 @@
 
 window.Engine3D = (function () {
 
-    let scene;
-    let camera;
-    let renderer;
-    let container;
-    let group;
+    let scene, camera, renderer, container, group;
 
     let isDragging = false;
     let lastX = 0;
     let lastY = 0;
 
-    // ======================================
-    // INIT
-    // ======================================
+    // ================= INIT =================
 
     function init(containerId) {
 
@@ -38,60 +32,56 @@ window.Engine3D = (function () {
         container.appendChild(renderer.domElement);
 
         const light1 = new THREE.DirectionalLight(0xffffff, 1);
-        light1.position.set(20, 20, 20);
+        light1.position.set(10, 20, 10);
         scene.add(light1);
 
-        const light2 = new THREE.AmbientLight(0xffffff, 0.3);
+        const light2 = new THREE.AmbientLight(0xffffff, 0.4);
         scene.add(light2);
 
         group = new THREE.Group();
         scene.add(group);
 
         enableSwipe();
-
         animate();
     }
 
-    // ======================================
-    // SWIPE ROTATION
-    // ======================================
+    // ================= SWIPE =================
 
-  function enableSwipe() {
+    function enableSwipe() {
 
-    renderer.domElement.style.touchAction = "none";
+        renderer.domElement.style.touchAction = "none";
 
-    renderer.domElement.addEventListener("pointerdown", (e) => {
-        isDragging = true;
-        lastX = e.clientX;
-        lastY = e.clientY;
-    });
+        renderer.domElement.addEventListener("pointerdown", (e) => {
+            isDragging = true;
+            lastX = e.clientX;
+            lastY = e.clientY;
+        });
 
-    renderer.domElement.addEventListener("pointerup", () => {
-        isDragging = false;
-    });
+        renderer.domElement.addEventListener("pointerup", () => {
+            isDragging = false;
+        });
 
-    renderer.domElement.addEventListener("pointermove", (e) => {
-        if (!isDragging) return;
+        renderer.domElement.addEventListener("pointermove", (e) => {
+            if (!isDragging) return;
 
-        const deltaX = e.clientX - lastX;
-        const deltaY = e.clientY - lastY;
+            const dx = e.clientX - lastX;
+            const dy = e.clientY - lastY;
 
-        group.rotation.y += deltaX * 0.005;
-        group.rotation.x += deltaY * 0.005;
+            group.rotation.y += dx * 0.005;
+            group.rotation.x += dy * 0.005;
 
-        // clamp vertical rotation
-        group.rotation.x = Math.max(
-            -Math.PI / 2,
-            Math.min(Math.PI / 2, group.rotation.x)
-        );
+            // clamp vertical
+            group.rotation.x = Math.max(
+                -Math.PI / 2,
+                Math.min(Math.PI / 2, group.rotation.x)
+            );
 
-        lastX = e.clientX;
-        lastY = e.clientY;
-    });
-}
-    // ======================================
-    // CLEAR
-    // ======================================
+            lastX = e.clientX;
+            lastY = e.clientY;
+        });
+    }
+
+    // ================= CLEAR =================
 
     function clear() {
         while (group.children.length > 0) {
@@ -99,108 +89,91 @@ window.Engine3D = (function () {
         }
     }
 
-    // ======================================
-    // PARSE BYTE
-    // ======================================
+    // ================= PARSE =================
 
-    function parseByte(value, format) {
-
-        if (format === "binary")
-            return parseInt(value, 2);
-
-        if (format === "decimal")
-            return parseInt(value);
-
-        if (format === "hex")
-            return parseInt(value, 16);
-
-        if (format === "octal")
-            return parseInt(value, 8);
-
-        if (format === "morse") {
-            const bin = value.replace(/-/g, "1").replace(/\./g, "0");
-            return parseInt(bin, 2);
+    function parseByte(v, f) {
+        if (f === "binary") return parseInt(v, 2);
+        if (f === "decimal") return parseInt(v);
+        if (f === "hex") return parseInt(v, 16);
+        if (f === "octal") return parseInt(v, 8);
+        if (f === "morse") {
+            return parseInt(v.replace(/-/g, "1").replace(/\./g, "0"), 2);
         }
-
         return 0;
     }
 
-    // ======================================
-    // RENDER
-    // ======================================
+    // ================= BUILD =================
 
-    function render(sizeStr, format, inputStr, alpha, gloss) {
+    function build(values, format, x, y, z, alpha, gloss) {
 
-        const start = performance.now();
+        let i = 0;
 
-        clear();
-
-        const parts = sizeStr.split("-");
-        const x = parseInt(parts[0]);
-        const y = parseInt(parts[1]);
-        const z = parseInt(parts[2]);
-
-        const values = inputStr.trim().split(/\s+/);
-
-        let index = 0;
-
-        for (let i = 0; i < x; i++) {
-            for (let j = 0; j < y; j++) {
-                for (let k = 0; k < z; k++) {
+        for (let xi = 0; xi < x; xi++) {
+            for (let yi = 0; yi < y; yi++) {
+                for (let zi = 0; zi < z; zi++) {
 
                     let color;
 
                     if (format === "color") {
-                        color = values[index++];
+                        color = values[i++];
                     } else {
-                        const r = parseByte(values[index++], format);
-                        const g = parseByte(values[index++], format);
-                        const b = parseByte(values[index++], format);
+                        const r = parseByte(values[i++], format);
+                        const g = parseByte(values[i++], format);
+                        const b = parseByte(values[i++], format);
                         color = `rgb(${r},${g},${b})`;
                     }
 
-                    const geometry = new THREE.BoxGeometry(1, 1, 1);
+                    const mat = new THREE.MeshStandardMaterial({
+                        color,
+                        transparent: true,
+                        opacity: parseFloat(alpha),
+                        roughness: 1 - Math.min(gloss / 200, 1),
+                        metalness: 0.5
+                    });
 
-                    const material = new THREE.MeshStandardMaterial({
-    color: color,
-    transparent: true,
-    opacity: parseFloat(alpha),
-    roughness: 1 - Math.min(parseFloat(gloss) / 200, 1),
-    metalness: 0.5
-});
-
-                    const cube = new THREE.Mesh(geometry, material);
+                    const cube = new THREE.Mesh(
+                        new THREE.BoxGeometry(1, 1, 1),
+                        mat
+                    );
 
                     cube.position.set(
-                        i - x / 2,
-                        j - y / 2,
-                        k - z / 2
+                        xi - x / 2,
+                        yi - y / 2,
+                        zi - z / 2
                     );
 
                     group.add(cube);
                 }
             }
         }
+    }
 
-        const end = performance.now();
-        const delta = end - start || 0.0001;
+    // ================= RENDER =================
+
+    function render(size, format, input, alpha, gloss) {
+
+        const t0 = performance.now();
+
+        clear();
+
+        const [x, y, z] = size.split("-").map(Number);
+        const values = input.trim().split(/\s+/);
+
+        build(values, format, x, y, z, alpha, gloss);
+
+        const dt = performance.now() - t0;
 
         return {
-            ms: delta.toFixed(2),
-            fps: (1000 / delta).toFixed(2)
+            ms: dt.toFixed(2),
+            fps: (1000 / (dt || 0.001)).toFixed(2)
         };
     }
 
-    // ======================================
-    // STRESS
-    // ======================================
+    // ================= STRESS =================
 
-    function stress(sizeStr, format) {
+    function stress(size, format) {
 
-        const parts = sizeStr.split("-");
-        const x = parseInt(parts[0]);
-        const y = parseInt(parts[1]);
-        const z = parseInt(parts[2]);
+        const [x, y, z] = size.split("-").map(Number);
 
         const total = format === "color"
             ? x * y * z
@@ -210,57 +183,48 @@ window.Engine3D = (function () {
 
         for (let i = 0; i < total; i++) {
 
-            const val = Math.floor(Math.random() * 256);
+            const v = Math.floor(Math.random() * 256);
 
             if (format === "binary")
-                arr.push(val.toString(2).padStart(8, "0"));
+                arr.push(v.toString(2).padStart(8, "0"));
 
             else if (format === "decimal")
-                arr.push(val.toString());
+                arr.push(v.toString());
 
             else if (format === "hex")
-                arr.push(val.toString(16).toUpperCase());
+                arr.push(v.toString(16));
 
             else if (format === "octal")
-                arr.push(val.toString(8));
+                arr.push(v.toString(8));
 
             else if (format === "morse")
-                arr.push(val.toString(2).padStart(8, "0")
+                arr.push(v.toString(2).padStart(8, "0")
                     .replace(/1/g, "-")
                     .replace(/0/g, "."));
 
             else if (format === "color")
-                arr.push("#" + val.toString(16).padStart(2, "0")
-                    + val.toString(16).padStart(2, "0")
-                    + val.toString(16).padStart(2, "0"));
+                arr.push("#" + v.toString(16).padStart(2, "0").repeat(3));
         }
 
         return arr.join(" ");
     }
 
-    // ======================================
-    // ANIMATION LOOP
-    // ======================================
+    function resize() {
+        if (!renderer) return;
+
+        const w = container.clientWidth;
+        const h = 500;
+
+        renderer.setSize(w, h);
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+    }
 
     function animate() {
         requestAnimationFrame(animate);
         renderer.render(scene, camera);
     }
-function resize() {
-    if (!renderer || !camera) return;
 
-    const width = container.clientWidth;
-    const height = 400;
-
-    renderer.setSize(width, height);
-    camera.aspect = width / height;
-    camera.updateProjectionMatrix();
-}
-    return {
-        init,
-        render,
-        stress,
-        resize
-    };
+    return { init, render, stress, resize };
 
 })();
